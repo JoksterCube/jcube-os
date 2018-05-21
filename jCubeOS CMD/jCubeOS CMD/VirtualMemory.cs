@@ -4,17 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace jCubeOS.Classes
+namespace jCubeOS_CMD
 {
     /// <summary>
     /// Virtual memory code segment
     /// </summary>
-    class VirtualMemoryCode
+    class VirtualMemory
     {
         private RealMemory Memory { get; set; }
         private Pager Pager { get; set; }
 
-        public VirtualMemoryCode(RealMemory memory, Pager pager)
+        public VirtualMemory(RealMemory memory, Pager pager)
         {
             Memory = memory;
             Pager = pager;

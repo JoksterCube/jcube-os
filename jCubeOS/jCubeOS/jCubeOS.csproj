@@ -106,6 +106,7 @@
     <Compile Include="Classes\Utility.cs" />
     <Compile Include="Classes\VirtualMemoryCode.cs" />
     <Compile Include="Classes\VirtualMemoryData.cs" />
+    <Compile Include="InputTextBox.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

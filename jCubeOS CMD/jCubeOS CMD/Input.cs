@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace jCubeOS.Classes
+namespace jCubeOS_CMD
 {
     abstract class Input
     {
-        public abstract string ReadLine();
+        public abstract byte[][] ReadBlock();
+        public abstract byte[] ReadWord();
     }
 }

@@ -6,9 +6,15 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Height="600" Width="800">
 
-    <Grid>
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
+        <Button Name="StartButton" Content="Start Task" HorizontalAlignment="Left" Margin="322,10,0,0" VerticalAlignment="Top" Height="32" Width="129" Click="StartButton_Click"/>
+        <TextBox Name="PathTextBox" HorizontalAlignment="Left" Text="Task Path" VerticalAlignment="Top" Margin="10,10,0,0" Width="307"/>
+        <TextBlock x:Name="OutputTextBlock" HorizontalAlignment="Left" Margin="11,47,0,0" Text="Output window" TextWrapping="Wrap" VerticalAlignment="Top" Height="229" Width="439"/>
+        <TextBox Name="InputTextBox" HorizontalAlignment="Left" Margin="11,0,0,0" Text="Input" VerticalAlignment="Center" Width="306" />
+        <Button x:Name="ExecuteButton" Content="Execute" HorizontalAlignment="Left" Height="31" Margin="11,321,0,0" VerticalAlignment="Top" Width="148" Click="ExecuteButton_Click"/>
+        <Button x:Name="StepButton" Content="Step" HorizontalAlignment="Left" Height="31" Margin="164,321,0,0" VerticalAlignment="Top" Width="153" Click="StepButton_Click"/>
 
     </Grid>
 </Page>

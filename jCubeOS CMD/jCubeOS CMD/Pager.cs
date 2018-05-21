@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace jCubeOS.Classes
+namespace jCubeOS_CMD
 {
     /// <summary>
     /// Helper object for handeling paging mechanism

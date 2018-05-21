@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace jCubeOS.Classes
+namespace jCubeOS_CMD
 {
     /// <summary>
     /// Real Machine simaling object
@@ -14,15 +14,14 @@ namespace jCubeOS.Classes
     {
         private RealMemory RealMemory { get; set; }
         private Processor Processor { get; set; }
-        private VirtualMemoryCode VirtualMemoryCode { get; set; }
-        private VirtualMemoryData VirtualMemoryData { get; set; }
+        private VirtualMemory VirtualMemory { get; set; }
+        private Pager Pager { get; set; }
 
         public RealMachine()
         {
             RealMemory = new RealMemory();
             Processor = new Processor(RealMemory);
-            VirtualMemoryCode = null;
-            VirtualMemoryData = null;
+            VirtualMemory = null;
         }
 
         /// <summary>
@@ -33,7 +32,6 @@ namespace jCubeOS.Classes
             string errorMessage = string.Empty;
 
             int codeSize = 0;
-            int dataSize = 0;
 
             List<string> code = new List<string>();
             List<string> data = new List<string>();
@@ -50,18 +48,29 @@ namespace jCubeOS.Classes
                 lines = new string[0];
             }
 
-            ReadTaskFile(ref errorMessage, ref dataSize, code, data, lines);
-            codeSize = (int)(Math.Ceiling((double)(code.Count()) / Utility.BLOCK_SIZE));
+            ReadTaskFile(ref errorMessage, code, data, lines);
+            //codeSize = (int)(Math.Ceiling((double)(code.Count()) / Utility.BLOCK_SIZE));
 
-            var virtualMemory = RealMemory.CreateVirtualMemory(code, codeSize, data, dataSize, inputHandler, outputHandler);
-            VirtualMemoryCode = virtualMemory.Item1;
-            VirtualMemoryData = virtualMemory.Item2;
-            
-            Processor.
+            if (errorMessage != string.Empty)
+            {
+                StopVirtualMachine(errorMessage);
+                return;
+            }
+
+            var virtualMemory = RealMemory.CreateVirtualMemory(code, codeSize, data, 0, inputHandler, outputHandler);
+            VirtualMemory = virtualMemory.Item1;
+            Pager = virtualMemory.Item2;
+
+            Processor.SetRegisterValue("IC", 100);
 
         }
 
-        private static void ReadTaskFile(ref string errorMessage, ref int dataSize, List<string> code, List<string> data, string[] lines)
+        private void StopVirtualMachine(string error)
+        {
+            Console.WriteLine("Virtual machine was stoped due to: " + error);
+        }
+
+        private static void ReadTaskFile(ref string errorMessage, List<string> code, List<string> data, string[] lines)
         {
             bool codeSegment = false;
             bool dataSegment = false;
@@ -71,24 +80,18 @@ namespace jCubeOS.Classes
 
             for (int i = 0; i < lines.Length; i++)
             {
-                if (!codeSegment && !dataSegment && lines[i] == "CODE\n")
+                if (!codeSegment && !dataSegment && lines[i] == "$CODE\n")
                 {
                     if (codeDone)
                     {
-                        errorMessage = "Repetetive CODE segments.";
+                        errorMessage = "Repetetive $CODE segments.";
                         break;
                     }
 
                     codeSegment = true;
                     continue;
                 }
-                else if (codeSegment && !dataSegment && lines[i] == "ENDCODE\n")
-                {
-                    codeSegment = false;
-                    codeDone = true;
-                    continue;
-                }
-                else if (!codeSegment && dataSegment && lines[i].StartsWith("DATA "))
+                else if (codeSegment && !dataSegment && lines[i] == ("$DATA\n"))
                 {
                     if (dataDone)
                     {
@@ -96,12 +99,10 @@ namespace jCubeOS.Classes
                         break;
                     }
 
+                    codeSegment = false;
+                    codeDone = true;
+
                     dataSegment = true;
-                    if (!Int32.TryParse(lines[i].Substring(5), out dataSize))
-                    {
-                        errorMessage = "DATA segment size is defined incorrectly.";
-                        break;
-                    }
                     continue;
                 }
                 else if (!codeSegment && dataSegment && lines[i] == "$END\n")

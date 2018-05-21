@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace jCubeOS.Classes
+namespace jCubeOS_CMD
 {
     /// <summary>
     /// Real machine processor
@@ -12,23 +12,21 @@ namespace jCubeOS.Classes
     class Processor
     {
         private RealMemory RealMemory { get; set; }
-        private VirtualMemoryCode VirtualMemoryCode { get; set; }
-        private VirtualMemoryData VirtualMemoryData { get; set; }
+        private VirtualMemory VirtualMemory { get; set; }
         private Pager Pager { get; set; }
 
         private Dictionary<string, Register> registers;
 
-        public Processor(RealMemory realMemory, VirtualMemoryCode virtualMemoryCode = null, VirtualMemoryData virtualMemoryData = null, Pager pager = null)
+        public Processor(RealMemory realMemory, VirtualMemory virtualMemory = null, Pager pager = null)
         {
             RealMemory = realMemory;
-            VirtualMemoryCode = virtualMemoryCode;
-            VirtualMemoryData = virtualMemoryData;
+            VirtualMemory = virtualMemory;
             Pager = pager;
 
             registers = new Dictionary<string, Register>
             {
-                { "R1", new Register() },										// Word length register
-                { "R2", new Register() },										// Word length register
+                { "R1", new Register() },										// Word length general register
+                { "R2", new Register() },										// Word length general register
                 { "IC", new HexRegister(2) },									// Current command adress in memory register
                 { "PTR", new HexRegister(4) },									// Page table adress register
                 { "SF", new StatusFlagRegister() },								// Aritmetic operation logic values
@@ -54,10 +52,19 @@ namespace jCubeOS.Classes
             registers[registerName].SetValue(value);
         }
 
-        public void SetVirtualMemory(VirtualMemoryCode virtualMemoryCode, VirtualMemoryData virtualMemoryData, Pager pager)
+        public void SetRegisterValue(string registerName, int value)
         {
-            VirtualMemoryCode = virtualMemoryCode;
-            VirtualMemoryData = virtualMemoryData;
+            SetRegisterValue(registerName, Utility.IntToBytes(value, registers[registerName].GetSize()));
+        }
+
+        public void SetICRegisterValue(int value)
+        {
+
+        }
+
+        public void SetVirtualMemory(VirtualMemory virtualMemory, Pager pager)
+        {
+            VirtualMemory = virtualMemory;
             Pager = pager;
         }
 

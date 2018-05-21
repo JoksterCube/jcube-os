@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace jCubeOS.Classes
+namespace jCubeOS_CMD
 {
     /// <summary>
     /// Real machine memory
@@ -63,11 +63,11 @@ namespace jCubeOS.Classes
         /// <summary>
         /// Allocating virtual memory
         /// </summary>
-        public Tuple<VirtualMemoryCode, VirtualMemoryData> CreateVirtualMemory(List<string> code, int codeSize, List<string> data, int dataSize, Input inputHandler = null, Output outputHandler = null)
+        public Tuple<VirtualMemory, Pager> CreateVirtualMemory(List<string> code, int codeSize, List<string> data, int dataSize, Input inputHandler = null, Output outputHandler = null)
         {
             Pager pager = new Pager(this, C: codeSize, D: dataSize, inputHandler: inputHandler, outputHandler: outputHandler);
 
-            VirtualMemoryCode virtualMemoryCode = new VirtualMemoryCode(this, pager);
+            VirtualMemory VirtualMemory = new VirtualMemory(this, pager);
             Dictionary<string, int> labels = new Dictionary<string, int>();
             List<string> cleanCode = new List<string>();
 
@@ -90,20 +90,19 @@ namespace jCubeOS.Classes
             for (int i = 0; i < cleanCode.Count(); i++)
             {
                 string command = cleanCode[i];
-                if (command.Contains('$')){
+                if (command.Contains('$'))
+                {
                     string label = command.Split('$')[1].RemoveWhiteSpaces();
                     string labelHexValue = Utility.IntToHex(labels[label], 2);
                     string labelWithMark = String.Format("${0}", label);
                     command = command.Replace(labelWithMark, labelHexValue);
                 }
-                command += ' ' * (Utility.WORD_SIZE - command.Length);
-                virtualMemoryCode.SetCodeValue(i, command);
+                command = command.AddWhiteSpacesToSize(Utility.WORD_SIZE);
+                VirtualMemory.SetCodeValue(i, command);
             }
 
-            VirtualMemoryData virtualMemoryData = new VirtualMemoryData(this, pager);
 
-
-            return Tuple.Create((VirtualMemoryCode)null, (VirtualMemoryData)null);
+            return Tuple.Create((VirtualMemory)null, (Pager)null);
         }
     }
 }

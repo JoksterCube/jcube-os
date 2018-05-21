@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace jCubeOS.Classes
+namespace jCubeOS_CMD
 {
     /// <summary>
     /// Memory cell. Has size out of bytes
@@ -57,6 +57,10 @@ namespace jCubeOS.Classes
             return Utility.BytesToString(GetValue());
         }
 
+        public int GetSize()
+        {
+            return Size;
+        }
 
         //public string GetStringValue()
         //{

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace jCubeOS.Classes
+namespace jCubeOS_CMD
 {
     /// <summary>
     /// Common usage register
@@ -24,6 +24,11 @@ namespace jCubeOS.Classes
         public virtual byte[] GetValue()
         {
             return Cell.GetValue();
+        }
+
+        public virtual int GetSize()
+        {
+            return Cell.GetSize();
         }
 
         public virtual void SetValue(byte[] value)

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace jCubeOS.Classes
+namespace jCubeOS_CMD
 {
     static class Utility
     {
@@ -61,6 +61,18 @@ namespace jCubeOS.Classes
             return sb.ToString();
         }
 
+        public static string AddWhiteSpacesToSize(this string str, int size)
+        {
+            if (size < str.Length) return str;
+            StringBuilder sb = new StringBuilder();
+            sb.Append(str);
+            for (int i = str.Length; i < size; i++)
+            {
+                sb.Append(' ');
+            }
+            return sb.ToString();
+        }
+
         public static byte[] StringToBytes(string str)
         {
             byte[] strBytes = new byte[str.Length];
@@ -81,6 +93,47 @@ namespace jCubeOS.Classes
                 sb.Append(c);
             }
             return sb.ToString();
+        }
+
+        public static byte[] IntToBytes(int integer, int sizeIfPossible = -1)
+        {
+            byte[] intBytes = BitConverter.GetBytes(integer);
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(intBytes);
+            }
+            if (sizeIfPossible < 0)
+            {
+                return intBytes;
+            }
+            else
+            {
+                List<byte> sizedBytes = new List<byte>();
+                if (sizeIfPossible > intBytes.Length)
+                {
+                    for (int i = sizeIfPossible - 1, b = intBytes.Length - 1; i >= 0; i--, b--)
+                    {
+                        sizedBytes.Add((b > 0) ? intBytes[b] : (byte)0);
+                    }
+                }
+                else
+                {
+                    bool added = false;
+                    for (int i = 0, s = sizeIfPossible - intBytes.Length; i < intBytes.Length; i++, s++)
+                    {
+                        if (intBytes[i] != 0 || added || s >= 0)
+                        {
+                            sizedBytes.Add(intBytes[i]);
+                            added = true;
+                        }
+                        else if (!added && intBytes[i] == 0 && s < 0)
+                        {
+                            continue;
+                        }
+                    }
+                }
+                return sizedBytes.ToArray();
+            }
         }
     }
 }
