@@ -1,4 +1,5 @@
-﻿using System;
+﻿using jCubeOS_CMD.Real;
+using System;
 
 namespace jCubeOS_CMD
 {
@@ -15,17 +16,14 @@ namespace jCubeOS_CMD
                 Console.WriteLine("Write task program name:");
                 string filePath = Console.ReadLine();
 
-                RealMachine = new RealMachine();
-
                 Input inputHandler = new ConsoleInput();
                 Output outputHandler = new ConsoleOutput();
 
-                RealMachine.LoadVirtualMachine(filePath, inputHandler, outputHandler);
+                outputHandler.WriteBlock(inputHandler.ReadBlock());
 
-                Console.WriteLine(Utility.IntToBytes(16));
-                Console.WriteLine(Utility.IntToBytes(32));
-                Console.WriteLine(Utility.IntToBytes(512));
-                Console.WriteLine(Utility.IntToBytes(64));
+                RealMachine = new RealMachine(inputHandler, outputHandler);
+
+                RealMachine.LoadVirtualMachine(filePath);
 
                 bool incorrect = false;
                 do

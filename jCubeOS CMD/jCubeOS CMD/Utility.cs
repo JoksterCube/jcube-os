@@ -13,41 +13,29 @@ namespace jCubeOS_CMD
         public static readonly int BLOCK_SIZE = 16;
         public static readonly int WORD_SIZE = 4;
         public static readonly int VIRTUAL_MEMORY_BLOCKS = 16;
+        public static readonly int SUPERVISOR_MEMORY_BLOCKS = 32;
+        public static readonly int EXTERNAL_MEMORY_BLOCKS = 128;
 
-
-        /// <summary>
-        /// Converts positive integer number to positive hex value of string type. If size is not -1, result will be at least that size.
-        /// </summary>
-        /// <param name="number">Integer number to convert</param>
-        /// <param name="size">Minimum size of result</param>
-        /// <returns></returns>
-        public static string IntToHex(int number, int size = -1)
+        public static char[] IntToHex(int number, int size = -1)
         {
             string hex = Math.Abs(number).ToString("X");
             if (size != -1)
             {
-                string placeholder = string.Empty;
+                char[] placeholder = new char[size];
                 for (int i = size - 1, ii = hex.Length - 1; i >= 0; i--, ii--)
                 {
-                    placeholder = (ii < 0 ? '0' : hex[ii]) + placeholder;
+                    placeholder[i] = (ii < 0 ? '0' : hex[ii]);
                 }
                 return placeholder;
             }
-            return hex;
+            return hex.ToCharArray();
         }
 
-        /// <summary>
-        /// Converts positive hex string to positive integer number
-        /// </summary>
-        /// <param name="hex">Hex number to convert</param>
-        /// <returns></returns>
-        public static int HexToInt(string hex)
+        public static int HexToInt(char[] hex)
         {
-            return int.Parse(hex, NumberStyles.HexNumber);
+            return int.Parse(hex.ToString(), NumberStyles.HexNumber);
         }
 
-
-        /// <returns>With no white spaces</returns>
         public static string RemoveWhiteSpaces(this string str)
         {
             StringBuilder sb = new StringBuilder();
@@ -71,6 +59,17 @@ namespace jCubeOS_CMD
                 sb.Append(' ');
             }
             return sb.ToString();
+        }
+
+        public static char[] AddWhiteSpacesToSize(this char[] arrayAddTo, int size)
+        {
+            if (size < arrayAddTo.Length) return arrayAddTo;
+            char[] newArray = new char[size];
+            for (int i = 0; i < size; i++)
+            {
+                newArray[i] = ((i < arrayAddTo.Length) ? arrayAddTo[i] : ' ');
+            }
+            return newArray;
         }
 
         public static byte[] StringToBytes(string str)
@@ -134,6 +133,23 @@ namespace jCubeOS_CMD
                 }
                 return sizedBytes.ToArray();
             }
+        }
+
+        public static Tuple<int, int> GetAdressTuple(int address)
+        {
+            int block = address / BLOCK_SIZE;
+            int cell = address % BLOCK_SIZE;
+            return Tuple.Create(block, cell);
+        }
+
+        public static char[] IntToChars(int value)
+        {
+            char[] charValue = value.ToString().ToCharArray();
+            for (int i = 0; i < charValue.Length; i++)
+            {
+                charValue[i] -= '0';
+            }
+            return charValue;
         }
     }
 }

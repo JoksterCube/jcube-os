@@ -8,7 +8,7 @@ namespace jCubeOS_CMD
 {
     abstract class Output
     {
-        public abstract void WriteBlock(byte[][] block);
-        public abstract void WriteWord(byte[] word);
+        public abstract void WriteBlock(char[][] block);
+        public abstract void WriteWord(char[] word);
     }
 }

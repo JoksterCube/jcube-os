@@ -8,7 +8,7 @@ namespace jCubeOS_CMD
 {
     abstract class Input
     {
-        public abstract byte[][] ReadBlock();
-        public abstract byte[] ReadWord();
+        public abstract char[][] ReadBlock();
+        public abstract char[] ReadWord();
     }
 }

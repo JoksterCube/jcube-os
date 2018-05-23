@@ -1,11 +1,12 @@
-﻿using System;
+﻿using jCubeOS_CMD.Virtual;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace jCubeOS_CMD
+namespace jCubeOS_CMD.Real
 {
     /// <summary>
     /// Real Machine simaling object
@@ -13,21 +14,28 @@ namespace jCubeOS_CMD
     class RealMachine
     {
         private RealMemory RealMemory { get; set; }
+        private ExternalMemory ExternalMemory { get; set; }
+        private ChannelTool ChannelTool { get; set; }
         private Processor Processor { get; set; }
+        private Input InputHandler { get; set; }
+        private Output OutputHandler { get; set; }
+
         private VirtualMemory VirtualMemory { get; set; }
         private Pager Pager { get; set; }
 
-        public RealMachine()
+        public RealMachine(Input inputHandler = null, Output outputHandler = null)
         {
             RealMemory = new RealMemory();
-            Processor = new Processor(RealMemory);
+            ExternalMemory = new ExternalMemory();
+            InputHandler = inputHandler;
+            OutputHandler = outputHandler;
+            ChannelTool = new ChannelTool(RealMemory, ExternalMemory, InputHandler, OutputHandler);
+            Processor = new Processor(RealMemory, ChannelTool);
             VirtualMemory = null;
+            Pager = null;
         }
-
-        /// <summary>
-        /// Loads virtual machine
-        /// </summary>
-        public void LoadVirtualMachine(string filePath, Input inputHandler = null, Output outputHandler = null)
+        
+        public void LoadVirtualMachine(string filePath)
         {
             string errorMessage = string.Empty;
 
@@ -41,15 +49,13 @@ namespace jCubeOS_CMD
             try
             {
                 lines = File.ReadAllLines(filePath);
+                ReadTaskFile(ref errorMessage, code, data, lines);
             }
-            catch
+            catch(Exception e)
             {
-                errorMessage = "File was not read correctly. Path might be incorrect.";
+                errorMessage = e.Message;
                 lines = new string[0];
             }
-
-            ReadTaskFile(ref errorMessage, code, data, lines);
-            //codeSize = (int)(Math.Ceiling((double)(code.Count()) / Utility.BLOCK_SIZE));
 
             if (errorMessage != string.Empty)
             {
@@ -57,18 +63,17 @@ namespace jCubeOS_CMD
                 return;
             }
 
-            var virtualMemory = RealMemory.CreateVirtualMemory(code, codeSize, data, 0, inputHandler, outputHandler);
+            
+
+            var virtualMemory = RealMemory.CreateVirtualMemory(code, codeSize, data, 0, InputHandler, OutputHandler);
             VirtualMemory = virtualMemory.Item1;
             Pager = virtualMemory.Item2;
 
-            Processor.SetRegisterValue("IC", 100);
+            Processor.SetHexRegisterValue("IC", 100);
 
         }
 
-        private void StopVirtualMachine(string error)
-        {
-            Console.WriteLine("Virtual machine was stoped due to: " + error);
-        }
+        private void StopVirtualMachine(string error) => Console.WriteLine("Virtual machine was stoped due to: " + error);
 
         private static void ReadTaskFile(ref string errorMessage, List<string> code, List<string> data, string[] lines)
         {

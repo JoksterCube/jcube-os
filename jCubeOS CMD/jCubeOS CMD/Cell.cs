@@ -6,70 +6,45 @@ using System.Threading.Tasks;
 
 namespace jCubeOS_CMD
 {
-    /// <summary>
-    /// Memory cell. Has size out of bytes
-    /// </summary>
     class Cell
     {
         private int Size { get; set; }
-        private byte[] Value { get; set; }
-
-        /// <param name="size">Cell size in bytes</param>
+        private char[] Value { get; set; }
+        
         public Cell(int size = -1)
         {
-            Size = (size == -1) ? Utility.WORD_SIZE : size;
-            Value = new byte[Size];
+            Size = ((size == -1) ? Utility.WORD_SIZE : size);
+            Value = new char[Size];
             for (int i = 0; i < Size; i++)
             {
-                Value[i] = 0;
+                Value[i] = ' ';
             }
         }
 
-        /// <summary>
-        /// Checks if the new value fits in the cell. If it does it sets Value to the new value. If it doesn't ----- Error
-        /// </summary>
-        /// <param name="value"></param>
-        public void SetValue(byte[] value)
+        public void SetValue(char[] value)
         {
-            if (value.Length <= Size)
+            if (value.Length == Size)
             {
                 Value = value;
+            }
+            else if( value.Length < Size)
+            {
+                Value = value.AddWhiteSpacesToSize(Size);
             }
             else
             {
                 throw new Exception(message: "Value does not fit in the cell");
             }
         }
-
-        public void SetValue(string value)
-        {
-            SetValue(Utility.StringToBytes(value));
-        }
-
-        /// <returns>Returns cells value</returns>
-        public byte[] GetValue()
+        
+        public char[] GetValue()
         {
             return Value;
-        }
-
-        public string GetStringValue()
-        {
-            return Utility.BytesToString(GetValue());
         }
 
         public int GetSize()
         {
             return Size;
         }
-
-        //public string GetStringValue()
-        //{
-        //    string value = string.Empty;
-        //    for (int i = 0; i < Size; i++)
-        //    {
-        //        value += Value[i];
-        //    }
-        //    return value;
-        //}
     }
 }

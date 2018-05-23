@@ -1,10 +1,12 @@
-﻿using System;
+﻿using jCubeOS_CMD;
+using jCubeOS_CMD.Real;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace jCubeOS_CMD
+namespace jCubeOS_CMD.Virtual
 {
     /// <summary>
     /// Virtual memory code segment
@@ -20,14 +22,14 @@ namespace jCubeOS_CMD
             Pager = pager;
         }
 
-        public string GetCodeValue(int address)
+        public char[] GetValue(int address)
         {
-            return Memory.GetStringValue(Pager.GetCodeCellAddress(address));
+            return Memory.GetUserMemoryValue(Pager.GetCodeCellAddress(address));
         }
 
-        public void SetCodeValue(int address, string value)
+        public void SetValue(int address, char[] value)
         {
-            Memory.SetValue(Pager.GetCodeCellAddress(address), value);
+            Memory.SetUserMemoryValue(Pager.GetCodeCellAddress(address), value);
         }
     }
 }

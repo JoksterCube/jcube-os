@@ -1,10 +1,12 @@
-﻿using System;
+﻿using jCubeOS_CMD.Registers;
+using jCubeOS_CMD.Virtual;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace jCubeOS_CMD
+namespace jCubeOS_CMD.Real
 {
     /// <summary>
     /// Real machine processor
@@ -12,12 +14,13 @@ namespace jCubeOS_CMD
     class Processor
     {
         private RealMemory RealMemory { get; set; }
+        private ChannelTool ChannelTool { get; set; }
         private VirtualMemory VirtualMemory { get; set; }
         private Pager Pager { get; set; }
 
         private Dictionary<string, Register> registers;
 
-        public Processor(RealMemory realMemory, VirtualMemory virtualMemory = null, Pager pager = null)
+        public Processor(RealMemory realMemory, ChannelTool channelTool, VirtualMemory virtualMemory = null, Pager pager = null)
         {
             RealMemory = realMemory;
             VirtualMemory = virtualMemory;
@@ -37,30 +40,36 @@ namespace jCubeOS_CMD
             };
         }
 
+        public void UseChannelTool(int SB, int DB, int ST, int DT)
+        {
+            ChannelTool.SetRegisters(SB, DB, ST, DT);
+            ChannelTool.XCHG();
+        }
+
         public Register GetRegisterValue(string registerName)
         {
-            return registers[registerName];
+            if (HasRegister(registerName)) return registers[registerName];
+            else throw new Exception("Processor does not have register named " + registerName);
         }
 
-        public void SetRegisterValue(string registerName, byte[] value)
+        public void SetRegisterValue(string registerName, char[] value)
         {
-            registers[registerName].SetValue(value);
+            if (HasRegister(registerName)) GetRegisterValue(registerName).SetValue(value);
+            else throw new Exception("Processor does not have register named " + registerName);
         }
 
-        public void SetRegisterValue(string registerName, string value)
+        public void SetHexRegisterValue(string registerName, int value)
         {
-            registers[registerName].SetValue(value);
+            if (!HasRegister(registerName)) throw new Exception("Processor does not have register named " + registerName);
+            else if (GetRegisterValue(registerName) is HexRegister) ((HexRegister)registers[registerName]).SetValue(value);
+            else throw new Exception("Register " + registerName + " is not HexRegister type.");
         }
 
-        public void SetRegisterValue(string registerName, int value)
-        {
-            SetRegisterValue(registerName, Utility.IntToBytes(value, registers[registerName].GetSize()));
-        }
+        private bool HasRegister(string registerName) => registers.ContainsKey(registerName);
 
-        public void SetICRegisterValue(int value)
-        {
+        public void SetICRegisterValue(int value) => ((HexRegister)registers["IC"]).SetValue(value);
 
-        }
+        public int GetICRegisterValue() => ((HexRegister)registers["IC"]).GetIntValue();
 
         public void SetVirtualMemory(VirtualMemory virtualMemory, Pager pager)
         {
@@ -68,10 +77,6 @@ namespace jCubeOS_CMD
             Pager = pager;
         }
 
-        /// <summary>
-        /// Executes one command
-        /// </summary>
-        /// <returns>true if successful and false if failed</returns>
         public bool Step()
         {
             //string value = VirtualMemoryCode[registers["IC"].GetValue()];
