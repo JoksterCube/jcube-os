@@ -15,6 +15,13 @@ namespace jCubeOS_CMD
 
         public Register() => Cell = new Cell();
 
+        public Register(int value)
+        {
+            char[] hexValue = value.IntToHex(Utility.WORD_SIZE);
+            Cell = new Cell();
+            SetValue(hexValue);
+        }
+
         public virtual char[] GetValue() => Cell.GetValue();
 
         public virtual int GetSize() => Cell.GetSize();

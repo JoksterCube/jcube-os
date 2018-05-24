@@ -10,6 +10,7 @@ namespace jCubeOS_CMD
         {
             if (block != null)
             {
+                Console.Write("OUTPUT: ");
                 for (int i = 0, b = block.Length - 1; i < Utility.BLOCK_SIZE; i++, b--)
                 {
                     Console.Write(((b > 0) ? new String(block[i]) : string.Empty).AddWhiteSpacesToSize(Utility.WORD_SIZE));
@@ -20,6 +21,7 @@ namespace jCubeOS_CMD
 
         public override void WriteWord(char[] word)
         {
+            Console.Write("OUTPUT: ");
             Console.WriteLine(new String(word).AddWhiteSpacesToSize(Utility.WORD_SIZE));
         }
     }

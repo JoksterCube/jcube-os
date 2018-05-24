@@ -39,27 +39,11 @@ namespace jCubeOS_CMD.Registers
 
         public override void SetValue(char[] value)
         {
-            if (ContainsChoice(value))
-            {
-                base.SetValue(value);
-            }
-            else
-            {
-
-            }
+            if (ContainsChoice(value)) base.SetValue(value);
+            else throw new Exception("Register does not contain choice: " + new string(value));
         }
 
-        public void SetValue(int value)
-        {
-            if (value >= 0)
-            {
-                SetValue(Utility.IntToChars(value));
-            }
-            else
-            {
-
-            }
-        }
+        public void SetValue(int value) => SetValue(Utility.IntToChars(Math.Abs(value)));
 
         public int GetIntValue() => Utility.CharsToInt(GetValue());
 
@@ -77,7 +61,6 @@ namespace jCubeOS_CMD.Registers
                         equals = false;
                         break;
                     }
-
                 }
                 if (equals)
                 {

@@ -64,6 +64,7 @@ namespace jCubeOS_CMD.Real
         }
 
         public void TakeMemoryBlock(int blockAddress) => Memory[blockAddress].SetTaken(true);
+
         public void FreeMemoryBlock(int blockAddress) => Memory[blockAddress].SetTaken(false);
 
         //SUPERVISOR MEMORY METHODS
@@ -106,10 +107,6 @@ namespace jCubeOS_CMD.Real
                     {
                         for (int ii = 0; ii < blocks[i].Length; ii++)
                         {
-                            if (blocks[i][ii] == null)
-                            {
-                                Console.WriteLine("FOUND");
-                            }
                             SetSupervisorMemoryValue(supervisorStartBlockAddress + i * Utility.BLOCK_SIZE + ii, blocks[i][ii]);
                         }
                     }
@@ -127,8 +124,7 @@ namespace jCubeOS_CMD.Real
             for (int i = supervisorAddress; i < supervisorAddress + blockCount * Utility.BLOCK_SIZE; i++) SetSupervisorMemoryValue(i, emptyWord);
         }
 
-
-
+        // CREATE VIRTUAL MEMORY
         public VirtualMemory CreateVirtualMemory(int blockSize = -1)
         {
             int PTR = GetFreeMemoryBlock();
@@ -146,7 +142,14 @@ namespace jCubeOS_CMD.Real
             return virtualMemory;
         }
 
+        // PRINT METHODS FOR CMD 
         public void PrintAllMemory()
+        {
+            PrintUserMemory();
+            PrintSupervisorMemory();
+        }
+
+        public void PrintUserMemory()
         {
             Console.WriteLine("--------------------------------USER MEMORY-------------------------------------");
             for (int i = 0; i < Utility.USER_MEMORY_BLOCKS; i++)
@@ -155,7 +158,11 @@ namespace jCubeOS_CMD.Real
                 for (int ii = 0; ii < Utility.BLOCK_SIZE; ii++) block += new string(GetUserMemoryValue(i * Utility.BLOCK_SIZE + ii)) + new string(new char[] { '|' });
                 Console.WriteLine(block.Replace('\n', '&'));
             }
+            Console.WriteLine("--------------------------------USER MEMORY-------------------------------------");
+        }
 
+        public void PrintSupervisorMemory()
+        {
             Console.WriteLine("------------------------------SUPERVISOR MEMORY---------------------------------");
             for (int i = 0; i < Utility.BLOCKS - Utility.USER_MEMORY_BLOCKS; i++)
             {
@@ -163,6 +170,7 @@ namespace jCubeOS_CMD.Real
                 for (int ii = 0; ii < Utility.BLOCK_SIZE; ii++) block += new string(GetSupervisorMemoryValue(i * Utility.BLOCK_SIZE + ii)) + new string(new char[] { '|' });
                 Console.WriteLine(block.Replace('\n', '&'));
             }
+            Console.WriteLine("------------------------------SUPERVISOR MEMORY---------------------------------");
         }
     }
 }

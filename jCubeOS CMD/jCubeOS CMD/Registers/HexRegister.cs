@@ -8,17 +8,13 @@ namespace jCubeOS_CMD.Registers
     {
         public HexRegister(int size = -1) => Cell = new Cell(size);
 
-        public void SetValue(int value)
+        public HexRegister(int value, int size = -1)
         {
-            if (value >= 0)
-            {
-                base.SetValue(Utility.IntToHex(value, Cell.GetSize()));
-            }
-            else
-            {
-
-            }
+            Cell = new Cell(size);
+            SetValue(value);
         }
+
+        public void SetValue(int value) => base.SetValue(Utility.IntToHex(Math.Abs(value), Cell.GetSize()));
 
         public int GetIntValue() => Utility.HexToInt(base.GetValue());
 

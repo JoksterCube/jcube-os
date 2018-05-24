@@ -31,9 +31,13 @@ namespace jCubeOS_CMD
             return hex.ToCharArray();
         }
 
+        public static bool IsHex(this char[] hex) => IsHex(new string(hex));
+
+        public static bool IsHex(this string hex) => int.TryParse(hex, NumberStyles.HexNumber, null, out int value);
+
         public static int HexToInt(this char[] hex) => HexToInt(new string(hex));
 
-        public static int HexToInt(string hex) => int.Parse(hex, NumberStyles.HexNumber);
+        public static int HexToInt(this string hex) => int.Parse(hex, NumberStyles.HexNumber);
 
         public static string RemoveWhiteSpaces(this string str)
         {
