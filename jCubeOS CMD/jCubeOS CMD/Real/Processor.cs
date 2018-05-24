@@ -15,6 +15,7 @@ namespace jCubeOS_CMD.Real
         private VirtualMemory VirtualMemory { get; set; }
         private Pager Pager { get; set; }
         private CommandInterpretator CommandInterpretator { get; set; }
+        private Interruptor Interruptor { get; set; }
 
         private Dictionary<string, Register> registers;
 
@@ -25,6 +26,7 @@ namespace jCubeOS_CMD.Real
             ChannelTool = channelTool;
             Pager = pager;
             CommandInterpretator = new CommandInterpretator(this, virtualMemory);
+            Interruptor = new Interruptor(this);
 
             registers = new Dictionary<string, Register>
             {
@@ -35,15 +37,19 @@ namespace jCubeOS_CMD.Real
                 { "SF", new StatusFlagRegister() },								// Aritmetic operation logic values
                 { "MODE", new ChoiceRegister('N', 'S') },						// Processor mode "N" - user, "S" - supervisor
                 { "PI", new ChoiceRegister(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) },		// Program interuptor
-                { "SI", new ChoiceRegister(0, 1, 2, 3, 4) },					// Supervisor interuptor
-                { "TI", new HexRegister(1) }								    // Timer interuptor
+                { "SI", new ChoiceRegister(0, 1, 2, 3, 4, 5, 6, 7) },			// Supervisor interuptor
+                { "TI", new HexRegister(Utility.TIMER_VALUE, 1) }				// Timer interuptor
             };
         }
 
+        public void SetChannelToolRegisterValues(int SB, int DB, int ST, int DT) => ChannelTool.SetRegisters(SB, DB, ST, DT);
+
+        public void ExecuteChannelToolXCHGCommand() => ChannelTool.XCHG();
+
         public void UseChannelTool(int SB, int DB, int ST, int DT)
         {
-            ChannelTool.SetRegisters(SB, DB, ST, DT);
-            ChannelTool.XCHG();
+            SetChannelToolRegisterValues(SB, DB, ST, DT);
+            ExecuteChannelToolXCHGCommand();
         }
 
         private bool HasRegister(string registerName) => registers.ContainsKey(registerName);
@@ -76,10 +82,24 @@ namespace jCubeOS_CMD.Real
             else throw new Exception("Register " + registerName + " is not ChoiceRegister type.");
         }
 
+        public int GetChoiceRegisterIntValue(string registerName)
+        {
+            if (!HasRegister(registerName)) throw new Exception("Processor does not have register named " + registerName);
+            else if (GetRegister(registerName) is ChoiceRegister) return ((ChoiceRegister)GetRegister(registerName)).GetIntValue();
+            else throw new Exception("Register " + registerName + " is not ChoiceRegister type.");
+        }
+
         public void SetHexRegisterValue(string registerName, int value)
         {
             if (!HasRegister(registerName)) throw new Exception("Processor does not have register named " + registerName);
             else if (GetRegister(registerName) is HexRegister) ((HexRegister)GetRegister(registerName)).SetValue(value);
+            else throw new Exception("Register " + registerName + " is not HexRegister type.");
+        }
+
+        public int GetHexRegisterIntValue(string registerName)
+        {
+            if (!HasRegister(registerName)) throw new Exception("Processor does not have register named " + registerName);
+            else if (GetRegister(registerName) is HexRegister) return ((HexRegister)GetRegister(registerName)).GetIntValue();
             else throw new Exception("Register " + registerName + " is not HexRegister type.");
         }
 
@@ -91,7 +111,9 @@ namespace jCubeOS_CMD.Real
 
         public int GetICRegisterValue() => ((HexRegister)GetRegister("IC")).GetIntValue();
 
-        public void IncICRegisterValue(int offset) => ((HexRegister)GetRegister("IC")).AddValue(offset);
+        public void IncICRegisterValue(int offset = 1) => ((HexRegister)GetRegister("IC")).AddValue(offset);
+
+        public void DecTIRegisterValue(int offset = 1) => ((HexRegister)GetRegister("TI")).AddValue(-offset);
 
         public void SetPTRRegisterValue(int ptr)
         {
@@ -107,6 +129,10 @@ namespace jCubeOS_CMD.Real
             CommandInterpretator.SetVirtualMemory(virtualMemory);
         }
 
+        public void SetSupervisorMode() => ((ChoiceRegister)GetRegister("MODE")).SetValue('S');
+
+        public void SetUserMode() => ((ChoiceRegister)GetRegister("MODE")).SetValue('N');
+
         public bool Step()
         {
             char[] stepCommand = VirtualMemory.GetValue(GetICRegisterValue());
@@ -114,16 +140,13 @@ namespace jCubeOS_CMD.Real
             Console.WriteLine("STEP: " + stringCommand);
             IncICRegisterValue(1);
             bool commandResult = CommandInterpretator.ParseCommand(stepCommand);
-            Test();
+            if (Test()) return Interrupt();
             return commandResult;
         }
 
         public bool Execute()
         {
-            while (Step())
-            {
-                continue;
-            }
+            while (Step()) continue;
             return false;
         }
 
@@ -142,9 +165,23 @@ namespace jCubeOS_CMD.Real
             Console.WriteLine("-----------Registers-----------");
         }
 
-        public void Test()
+        private bool Interrupt()
         {
+            SetSupervisorMode();
+            if (Interruptor.Interrupt())
+            {
+                SetUserMode();
+                return true;
+            }
+            else return false;
+        }
 
+        private bool Test()
+        {
+            int PI = GetChoiceRegisterIntValue("PI");
+            int SI = GetChoiceRegisterIntValue("SI");
+            int TI = GetHexRegisterIntValue("TI");
+            return PI + SI > 0 || TI == 0;
         }
     }
 }

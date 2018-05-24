@@ -36,10 +36,11 @@ namespace jCubeOS_CMD.Real
             Pager = null;
         }
 
-        public void LoadVirtualMachine(string filePath)
+        public bool LoadVirtualMachine(string filePath)
         {
             //Get all file to one string
             string uncutTask = ReadTaskFile(filePath);
+            if (uncutTask == string.Empty) return false;
 
             //Cut string to blocks words and bytes
             char[][][] taskCutToBlocks = CutToBlocks(uncutTask);
@@ -67,6 +68,8 @@ namespace jCubeOS_CMD.Real
             GetProcessor().SetVirtualMemory(VirtualMemory, Pager);
 
             GetProcessor().SetICRegisterValue(0);
+
+            return true;
         }
 
         private string ReadTaskFile(string filePath)
@@ -81,7 +84,11 @@ namespace jCubeOS_CMD.Real
                 }
                 return singleString;
             }
-            else throw new Exception("File path is incorrect or is being used by another process.");
+            else
+            {
+                Console.WriteLine("File path is incorrect or is being used by another process.");
+                return string.Empty;
+            }
         }
 
         private char[][][] CutToBlocks(string uncutTask)

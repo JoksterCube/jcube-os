@@ -25,7 +25,7 @@ namespace jCubeOS_CMD
                 //FAKE MEMORY ALLOCATION
                 FakeMemory(0, 1, 3, 5, 7, 9, 10, 14, 16, 17, 21, 30);
 
-                RealMachine.LoadVirtualMachine(filePath);
+                if (!RealMachine.LoadVirtualMachine(filePath)) continue;
 
                 exit = Execution(exit);
             }
@@ -40,13 +40,14 @@ namespace jCubeOS_CMD
                 Console.Write("EXECUTION MODE: ");
                 string executionMode = Console.ReadLine();
                 Console.Write("\n");
+                bool working = true;
                 switch (executionMode)
                 {
                     case "1":
-                        RealMachine.GetProcessor().Execute();
+                        working = RealMachine.GetProcessor().Execute();
                         break;
                     case "2":
-                        RealMachine.GetProcessor().Step();
+                        working = RealMachine.GetProcessor().Step();
                         bool done = false;
                         while (!done)
                         {
@@ -57,10 +58,10 @@ namespace jCubeOS_CMD
                             switch (action)
                             {
                                 case "1":
-                                    RealMachine.GetProcessor().Step();
+                                    working = RealMachine.GetProcessor().Step();
                                     break;
                                 case "2":
-                                    RealMachine.GetProcessor().Execute();
+                                    working = RealMachine.GetProcessor().Execute();
                                     break;
                                 case "3":
                                     RealMachine.GetRealMemory().PrintUserMemory();
@@ -78,6 +79,7 @@ namespace jCubeOS_CMD
                                     Console.WriteLine("Incorrect action.");
                                     break;
                             }
+                            if (!working) done = true;
                         }
                         break;
                     case "0":
@@ -91,6 +93,7 @@ namespace jCubeOS_CMD
                         incorrect = true;
                         break;
                 }
+                if (!working) break;
             } while (incorrect);
             return exit;
         }

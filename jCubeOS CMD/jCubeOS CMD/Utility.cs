@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace jCubeOS_CMD
 {
-    static partial class Utility
+    static class Utility
     {
         public static readonly int BLOCKS = 64;
         public static readonly int BLOCK_SIZE = 16;
@@ -15,6 +15,9 @@ namespace jCubeOS_CMD
         public static readonly int VIRTUAL_MEMORY_BLOCKS = 16;
         public static readonly int USER_MEMORY_BLOCKS = 32;
         public static readonly int EXTERNAL_MEMORY_BLOCKS = 128;
+        public static readonly int TIMER_VALUE = 15;
+
+        public enum CharMode { Number, Character }
 
         public static char[] IntToHex(this int number, int size = -1)
         {
