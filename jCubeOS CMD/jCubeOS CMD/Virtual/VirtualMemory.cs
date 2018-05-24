@@ -8,9 +8,6 @@ using System.Threading.Tasks;
 
 namespace jCubeOS_CMD.Virtual
 {
-    /// <summary>
-    /// Virtual memory code segment
-    /// </summary>
     class VirtualMemory
     {
         private RealMemory Memory { get; set; }
@@ -22,14 +19,14 @@ namespace jCubeOS_CMD.Virtual
             Pager = pager;
         }
 
-        public char[] GetValue(int address)
-        {
-            return Memory.GetUserMemoryValue(Pager.GetCodeCellAddress(address));
-        }
+        public char[] GetValue(int virtualAddress) => Memory.GetUserMemoryValue(Pager.GetCellRealAddress(virtualAddress));
 
-        public void SetValue(int address, char[] value)
-        {
-            Memory.SetUserMemoryValue(Pager.GetCodeCellAddress(address), value);
-        }
+        public char[][] GetBlockValues(int virtualBlockAddress) => Memory.GetUserMemoryBlockValues(Pager.GetCellRealAddress(virtualBlockAddress));
+
+        public void SetValue(int virtualAddress, char[] value) => Memory.SetUserMemoryValue(Pager.GetCellRealAddress(virtualAddress), value);
+
+        public void SetBlockValues(int virtualBlockAddress, char[][] values) => Memory.SetUserMemoryBlockValues(Pager.GetCellRealAddress(virtualBlockAddress), values);
+
+        public Pager GetPager() => Pager;
     }
 }

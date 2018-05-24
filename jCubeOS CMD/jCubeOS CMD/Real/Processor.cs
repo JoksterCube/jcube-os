@@ -8,15 +8,13 @@ using System.Threading.Tasks;
 
 namespace jCubeOS_CMD.Real
 {
-    /// <summary>
-    /// Real machine processor
-    /// </summary>
     class Processor
     {
         private RealMemory RealMemory { get; set; }
         private ChannelTool ChannelTool { get; set; }
         private VirtualMemory VirtualMemory { get; set; }
         private Pager Pager { get; set; }
+        private CommandInterpretator CommandInterpretator { get; set; }
 
         private Dictionary<string, Register> registers;
 
@@ -24,7 +22,9 @@ namespace jCubeOS_CMD.Real
         {
             RealMemory = realMemory;
             VirtualMemory = virtualMemory;
+            ChannelTool = channelTool;
             Pager = pager;
+            CommandInterpretator = new CommandInterpretator(this, virtualMemory);
 
             registers = new Dictionary<string, Register>
             {
@@ -46,22 +46,24 @@ namespace jCubeOS_CMD.Real
             ChannelTool.XCHG();
         }
 
-        public Register GetRegisterValue(string registerName)
+        public Register GetRegister(string registerName)
         {
             if (HasRegister(registerName)) return registers[registerName];
             else throw new Exception("Processor does not have register named " + registerName);
         }
 
+        public char[] GetRegisterValue(string registerName) => GetRegister(registerName).GetValue();
+
         public void SetRegisterValue(string registerName, char[] value)
         {
-            if (HasRegister(registerName)) GetRegisterValue(registerName).SetValue(value);
+            if (HasRegister(registerName)) GetRegister(registerName).SetValue(value);
             else throw new Exception("Processor does not have register named " + registerName);
         }
 
         public void SetHexRegisterValue(string registerName, int value)
         {
             if (!HasRegister(registerName)) throw new Exception("Processor does not have register named " + registerName);
-            else if (GetRegisterValue(registerName) is HexRegister) ((HexRegister)registers[registerName]).SetValue(value);
+            else if (GetRegister(registerName) is HexRegister) ((HexRegister)registers[registerName]).SetValue(value);
             else throw new Exception("Register " + registerName + " is not HexRegister type.");
         }
 
@@ -71,22 +73,31 @@ namespace jCubeOS_CMD.Real
 
         public int GetICRegisterValue() => ((HexRegister)registers["IC"]).GetIntValue();
 
+        public void SetPTRRegisterValue(int ptr)
+        {
+            ptr += (Utility.VIRTUAL_MEMORY_BLOCKS - 1) * 16 * 16 * 16 + (Utility.BLOCK_SIZE - 1) * 16 * 16;
+            ((HexRegister)registers["PTR"]).SetValue(ptr);
+        }
+
         public void SetVirtualMemory(VirtualMemory virtualMemory, Pager pager)
         {
             VirtualMemory = virtualMemory;
             Pager = pager;
+            SetPTRRegisterValue(pager.GetPTR());
+            CommandInterpretator.SetVirtualMemory(virtualMemory);
         }
 
         public bool Step()
         {
-            //string value = VirtualMemoryCode[registers["IC"].GetValue()];
+            char[] stepCommand = VirtualMemory.GetValue(GetICRegisterValue());
+            string stringCommand = new String(stepCommand);
+            Console.WriteLine("Step: " + stringCommand);
+
+            CommandInterpretator.ParseCommand(stepCommand);
+
             return false;
         }
 
-        /// <summary>
-        /// Executes as long as it does.
-        /// </summary>
-        /// <returns>true if successful and false if failed</returns>
         public bool Execute()
         {
             while (Step())

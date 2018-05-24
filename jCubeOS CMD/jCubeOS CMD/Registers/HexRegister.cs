@@ -20,7 +20,7 @@ namespace jCubeOS_CMD.Registers
             }
         }
 
-        public int GetIntValue() => Utility.HexToInt(base.Value);
+        public int GetIntValue() => Utility.HexToInt(base.GetValue());
 
         public void AddValue(int value) => SetValue(GetIntValue() + value);
     }

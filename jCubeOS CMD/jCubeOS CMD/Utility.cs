@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace jCubeOS_CMD
 {
-    static class Utility
+    static partial class Utility
     {
-        public static readonly int BLOCKS = 128;
+        public static readonly int BLOCKS = 64;
         public static readonly int BLOCK_SIZE = 16;
         public static readonly int WORD_SIZE = 4;
         public static readonly int VIRTUAL_MEMORY_BLOCKS = 16;
-        public static readonly int SUPERVISOR_MEMORY_BLOCKS = 32;
+        public static readonly int USER_MEMORY_BLOCKS = 32;
         public static readonly int EXTERNAL_MEMORY_BLOCKS = 128;
 
-        public static char[] IntToHex(int number, int size = -1)
+        public static char[] IntToHex(this int number, int size = -1)
         {
             string hex = Math.Abs(number).ToString("X");
             if (size != -1)
@@ -31,10 +31,9 @@ namespace jCubeOS_CMD
             return hex.ToCharArray();
         }
 
-        public static int HexToInt(char[] hex)
-        {
-            return int.Parse(hex.ToString(), NumberStyles.HexNumber);
-        }
+        public static int HexToInt(this char[] hex) => HexToInt(new string(hex));
+
+        public static int HexToInt(string hex) => int.Parse(hex, NumberStyles.HexNumber);
 
         public static string RemoveWhiteSpaces(this string str)
         {
@@ -72,84 +71,71 @@ namespace jCubeOS_CMD
             return newArray;
         }
 
-        public static byte[] StringToBytes(string str)
-        {
-            byte[] strBytes = new byte[str.Length];
-            for (int i = 0; i < str.Length; i++)
-            {
-                char c = (char)str[i];
-                strBytes[i] = Convert.ToByte(c);
-            }
-            return strBytes;
-        }
-
-        public static string BytesToString(byte[] bytes)
+        public static string AddEndLine(this string str)
         {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < bytes.Length; i++)
-            {
-                char c = Convert.ToChar(bytes[i]);
-                sb.Append(c);
-            }
+            sb.Append(str);
+            sb.Append('\n');
             return sb.ToString();
         }
 
-        public static byte[] IntToBytes(int integer, int sizeIfPossible = -1)
+        public static char[] AddEndLine(this char[] charArray)
         {
-            byte[] intBytes = BitConverter.GetBytes(integer);
-            if (BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(intBytes);
-            }
-            if (sizeIfPossible < 0)
-            {
-                return intBytes;
-            }
-            else
-            {
-                List<byte> sizedBytes = new List<byte>();
-                if (sizeIfPossible > intBytes.Length)
-                {
-                    for (int i = sizeIfPossible - 1, b = intBytes.Length - 1; i >= 0; i--, b--)
-                    {
-                        sizedBytes.Add((b > 0) ? intBytes[b] : (byte)0);
-                    }
-                }
-                else
-                {
-                    bool added = false;
-                    for (int i = 0, s = sizeIfPossible - intBytes.Length; i < intBytes.Length; i++, s++)
-                    {
-                        if (intBytes[i] != 0 || added || s >= 0)
-                        {
-                            sizedBytes.Add(intBytes[i]);
-                            added = true;
-                        }
-                        else if (!added && intBytes[i] == 0 && s < 0)
-                        {
-                            continue;
-                        }
-                    }
-                }
-                return sizedBytes.ToArray();
-            }
+            char[] newCharArray = new char[charArray.Length + 1];
+            for (int i = 0; i < charArray.Length; i++) newCharArray[i] = charArray[i];
+            newCharArray[charArray.Length] = '\n';
+            return newCharArray;
         }
 
-        public static Tuple<int, int> GetAdressTuple(int address)
+        public static Tuple<int, int> GetAddressTuple(int address)
         {
             int block = address / BLOCK_SIZE;
             int cell = address % BLOCK_SIZE;
             return Tuple.Create(block, cell);
         }
 
-        public static char[] IntToChars(int value)
+        public static int GetAddressInt(int block, int cell) => block * BLOCK_SIZE + cell;
+
+        public static char[] IntToChars(this int value, CharMode charMode = CharMode.Character)
         {
             char[] charValue = value.ToString().ToCharArray();
-            for (int i = 0; i < charValue.Length; i++)
+            switch (charMode)
             {
-                charValue[i] -= '0';
+                case CharMode.Number:
+                    for (int i = 0; i < charValue.Length; i++) charValue[i] -= '0';
+                    return charValue;
+                case CharMode.Character:
+                default:
+                    return charValue;
             }
-            return charValue;
         }
+
+        public static int CharsToInt(this char[] value, CharMode charMode = CharMode.Character)
+        {
+            int intValue = 0;
+            for (int i = 0; i < value.Length; i++)
+            {
+                intValue *= 10;
+                intValue += value[i];
+                switch (charMode)
+                {
+                    case CharMode.Number:
+                        break;
+                    case CharMode.Character:
+                        intValue -= '0';
+                        break;
+                }
+            }
+            return intValue;
+        }
+
+        public static string CharsToString(this char[][] chars)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < chars.Length; i++) sb.Append(new string(chars[i]));
+            return sb.ToString();
+        }
+
+        public static char[] StringToChars(this string str) => str.ToCharArray();
     }
 }

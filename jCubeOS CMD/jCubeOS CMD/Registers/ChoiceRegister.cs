@@ -16,16 +16,8 @@ namespace jCubeOS_CMD.Registers
             char[][] charChoices = new char[choices.Length][];
             for (int i = 0; i < choices.Length; i++)
             {
-                if (choices[i] >= 0)
-                {
-                    charChoices[i] = Utility.IntToChars(choices[i]);
-                }
-                else
-                {
-
-
-                    break;
-                }
+                if (choices[i] >= 0) charChoices[i] = Utility.IntToChars(choices[i]);
+                else throw new Exception("Choice register cannot get negative integer value.");
             }
             Init(charChoices);
         }
@@ -47,7 +39,7 @@ namespace jCubeOS_CMD.Registers
 
         public override void SetValue(char[] value)
         {
-            if (Choices.Contains(value))
+            if (ContainsChoice(value))
             {
                 base.SetValue(value);
             }
@@ -67,6 +59,33 @@ namespace jCubeOS_CMD.Registers
             {
 
             }
+        }
+
+        public int GetIntValue() => Utility.CharsToInt(GetValue());
+
+        private bool ContainsChoice(char[] value)
+        {
+            bool contains = false;
+            for (int i = 0; i < Choices.Length; i++)
+            {
+                if (value.Length != Choices[i].Length) continue;
+                bool equals = true;
+                for (int ii = 0; ii < Choices[i].Length; ii++)
+                {
+                    if (Choices[i][ii] != value[ii])
+                    {
+                        equals = false;
+                        break;
+                    }
+
+                }
+                if (equals)
+                {
+                    contains = true;
+                    break;
+                }
+            }
+            return contains;
         }
     }
 }

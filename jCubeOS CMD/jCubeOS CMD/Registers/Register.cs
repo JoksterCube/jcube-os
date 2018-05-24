@@ -15,7 +15,7 @@ namespace jCubeOS_CMD
 
         public Register() => Cell = new Cell();
 
-        public virtual char[] Value => Cell.GetValue();
+        public virtual char[] GetValue() => Cell.GetValue();
 
         public virtual int GetSize() => Cell.GetSize();
 

@@ -8,15 +8,28 @@ namespace jCubeOS_CMD.Real
 {
     class Pager
     {
-        
-        public Pager(RealMemory realMemory, int address = -1, int C = -1, int D = -1, Input inputHandler = null, Output outputHandler = null)
-        {
+        RealMemory RealMemory { get; set; }
+        private int PTR { get; set; }
 
+        public Pager(RealMemory realMemory, int pagerAddress = 0)
+        {
+            RealMemory = realMemory;
+            PTR = 0;
         }
 
-        public int GetCodeCellAddress(int address)
+        public int GetCellRealAddress(int virtualAddress)
         {
-            return 0;
+            var addressTuple = Utility.GetAddressTuple(virtualAddress);
+            int virtualBlock = addressTuple.Item1;
+            int cell = addressTuple.Item2;
+            int realBlock = RealMemory.GetUserMemoryValue(PTR * Utility.BLOCK_SIZE + virtualBlock).HexToInt();
+            return realBlock * Utility.BLOCK_SIZE + cell;
         }
+
+        public void SetPTR(int value) => PTR = value;
+
+        public int GetPTR() => PTR;
+
+        public void AddBlock(int index, int blockRealAddress) => RealMemory.SetUserMemoryValue(PTR * Utility.BLOCK_SIZE + index, blockRealAddress.IntToHex());
     }
 }

@@ -19,11 +19,14 @@ namespace jCubeOS_CMD
                 Input inputHandler = new ConsoleInput();
                 Output outputHandler = new ConsoleOutput();
 
-                outputHandler.WriteBlock(inputHandler.ReadBlock());
-
                 RealMachine = new RealMachine(inputHandler, outputHandler);
 
+                //FAKE MEMORY ALLOCATION
+                FakeMemory(RealMachine.GetRealMemory());
+
                 RealMachine.LoadVirtualMachine(filePath);
+
+                //RealMachine.GetRealMemory().PrintAllMemory();
 
                 bool incorrect = false;
                 do
@@ -52,6 +55,20 @@ namespace jCubeOS_CMD
                     }
                 } while (incorrect);
             }
+        }
+
+        static void FakeMemory(RealMemory realMemory)
+        {
+            realMemory.TakeMemoryBlock(0);
+            realMemory.TakeMemoryBlock(1);
+            realMemory.TakeMemoryBlock(4);
+            realMemory.TakeMemoryBlock(5);
+            realMemory.TakeMemoryBlock(10);
+            realMemory.TakeMemoryBlock(13);
+            realMemory.TakeMemoryBlock(16);
+            realMemory.TakeMemoryBlock(18);
+            realMemory.TakeMemoryBlock(20);
+            realMemory.TakeMemoryBlock(25);
         }
     }
 }

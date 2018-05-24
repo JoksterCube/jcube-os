@@ -10,41 +10,23 @@ namespace jCubeOS_CMD
     {
         private int Size { get; set; }
         private char[] Value { get; set; }
-        
+
         public Cell(int size = -1)
         {
             Size = ((size == -1) ? Utility.WORD_SIZE : size);
             Value = new char[Size];
-            for (int i = 0; i < Size; i++)
-            {
-                Value[i] = ' ';
-            }
+            for (int i = 0; i < Size; i++) Value[i] = ' ';
         }
 
         public void SetValue(char[] value)
         {
-            if (value.Length == Size)
-            {
-                Value = value;
-            }
-            else if( value.Length < Size)
-            {
-                Value = value.AddWhiteSpacesToSize(Size);
-            }
-            else
-            {
-                throw new Exception(message: "Value does not fit in the cell");
-            }
-        }
-        
-        public char[] GetValue()
-        {
-            return Value;
+            if (value.Length == Size) Value = value;
+            else if (value.Length < Size) Value = value.AddWhiteSpacesToSize(Size);
+            else throw new Exception(message: "Value does not fit in the cell");
         }
 
-        public int GetSize()
-        {
-            return Size;
-        }
+        public char[] GetValue() => Value;
+
+        public int GetSize() => Size;
     }
 }
