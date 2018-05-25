@@ -1,21 +1,25 @@
 ﻿using jCubeOS_CMD.Real;
 using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace jCubeOS_CMD
 {
     class Program
     {
         private static RealMachine RealMachine { get; set; }
+        private static List<string> ProgramList { get; set; }
 
         static void Main(string[] args)
         {
             PrintLogo();
             Console.WriteLine("\n----------- Welcome to jCubeOS! -----------\n");
+            GetFileNames();
             bool exit = false;
             while (!exit)
             {
                 Console.Write("\nTask program name: ");
-                string filePath = Console.ReadLine();
+                string filePath = FromFileList(Console.ReadLine());
 
                 Input inputHandler = new ConsoleInput();
                 Output outputHandler = new ConsoleOutput();
@@ -96,6 +100,26 @@ namespace jCubeOS_CMD
                 if (!working) break;
             } while (incorrect);
             return exit;
+        }
+
+        private static void GetFileNames()
+        {
+            ProgramList = new List<string>();
+            string[] files = Directory.GetFiles(@".", "*.jcos");
+            if (files.Length > 0) Console.WriteLine("jCubeOS program files found in directory:");
+            for (int i = 0; i < files.Length; i++)
+            {
+                ProgramList.Add(files[i]);
+                Console.WriteLine(i + ". " + ProgramList[i]);
+            }
+        }
+
+        private static string FromFileList(string fileName)
+        {
+            int index = -1;
+            if (int.TryParse(fileName, out index) && index >= 0 && index < ProgramList.Count) fileName = ProgramList[index];
+
+            return fileName;
         }
 
         private static void PrintStepMenu()
