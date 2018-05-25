@@ -14,6 +14,9 @@ namespace jCubeOS_CMD.Real
         private int[] RealFileMemoryAddresses { get; set; }
         private FileStream[] OpenFileStreams { get; set; }
 
+        private Dictionary<int, StreamReader> FileReaders;
+        private Dictionary<int, StreamWriter> FileWriters;
+
         public FileManager(RealMemory realMemory, Processor processor)
         {
             RealMemory = realMemory;
@@ -21,6 +24,8 @@ namespace jCubeOS_CMD.Real
             RealFileMemoryAddresses = new int[Utility.FILE_MANAGER_BLOCKS];
             OpenFileStreams = new FileStream[Utility.FILE_MANAGER_BLOCKS];
             GetBlocks();
+            FileReaders = new Dictionary<int, StreamReader>();
+            FileWriters = new Dictionary<int, StreamWriter>();
         }
 
         private void GetBlocks()
@@ -104,34 +109,100 @@ namespace jCubeOS_CMD.Real
             string fileName = ConstructFileName(fileNameBlock);
             if (fileName.Length >= (Utility.BLOCK_SIZE - 2) * Utility.WORD_SIZE) { Processor.SetChoiceRegisterValue("PI", 12); return -1; }
             if (IsAlreadyOpen(fileName)) { Processor.SetChoiceRegisterValue("PI", 6); return -1; }
-            if (!File.Exists(fileName)) { Processor.SetChoiceRegisterValue("PI", 6); return -1; }
+            //if (!File.Exists(fileName) || fileOpenMode == 'W') { Processor.SetChoiceRegisterValue("PI", 6); return -1; }
             switch (fileOpenMode)
             {
-                case 'R': OpenFileStreams[emptyBlockIndex] = File.OpenRead(fileName); break;
-                case 'W': OpenFileStreams[emptyBlockIndex] = File.OpenWrite(fileName); break;
+                case 'R':
+                    OpenFileStreams[emptyBlockIndex] = File.OpenRead(fileName);
+                    FileReaders.Add(emptyBlockIndex, new StreamReader(OpenFileStreams[emptyBlockIndex]));
+                    break;
+                case 'W':
+                    OpenFileStreams[emptyBlockIndex] = File.OpenWrite(fileName);
+                    FileWriters.Add(emptyBlockIndex, new StreamWriter(OpenFileStreams[emptyBlockIndex]));
+                    break;
             }
             PutBlockToMemory(fileNameBlock, fileOpenMode, emptyBlockIndex);
             return emptyBlockIndex;
         }
 
-        public void CloseFile()
+        public void CloseAll()
         {
-
+            for (int i = 0; i < Utility.FILE_MANAGER_BLOCKS; i++) CloseFile(i);
         }
 
-        public void ReadFile()
+        public bool CloseFile(int index)
         {
-
+            if (index < 0 || index >= Utility.FILE_MANAGER_BLOCKS)
+            {
+                Processor.SetChoiceRegisterValue("PI", 9);
+                return false;
+            }
+            if (FileReaders.ContainsKey(index))
+            {
+                FileReaders[index].Close();
+                FileReaders[index] = null;
+                FileReaders.Remove(index);
+                OpenFileStreams[index].Close();
+                OpenFileStreams[index] = null;
+                CleanBlock(RealFileMemoryAddresses[index]);
+                return true;
+            }
+            else if (FileWriters.ContainsKey(index))
+            {
+                FileWriters[index].Close();
+                FileWriters[index] = null;
+                FileWriters.Remove(index);
+                OpenFileStreams[index].Close();
+                OpenFileStreams[index] = null;
+                CleanBlock(RealFileMemoryAddresses[index]);
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 9);
+                return false;
+            }
         }
 
-        public void WriteFile()
+        public char[][] ReadFile(int index, int count = -1)
         {
+            if (index < 0 || index >= Utility.FILE_MANAGER_BLOCKS || !FileReaders.ContainsKey(index))
+            {
+                Processor.SetChoiceRegisterValue("PI", 7);
+                return null;
+            }
+            if (count == -1) count = Utility.BLOCK_SIZE;
 
+            char[][] readBlock = new char[count][];
+
+            for (int i = 0; i < count; i++)
+            {
+                readBlock[i] = new char[Utility.WORD_SIZE];
+                FileReaders[index].Read(readBlock[i], 0, Utility.WORD_SIZE);
+            }
+            return readBlock;
         }
 
-        public void DeleteFile()
+        public bool WriteFile(int index, char[][] values)
         {
+            if (index < 0 || index >= Utility.FILE_MANAGER_BLOCKS || !FileWriters.ContainsKey(index))
+            {
+                Processor.SetChoiceRegisterValue("PI", 8);
+                return false;
+            }
+            for (int i = 0; i < values.Length; i++) FileWriters[index].Write(values[i], 0, Utility.WORD_SIZE);
+            return true;
+        }
 
+        public bool DeleteFile(char[][] fileNameBlock)
+        {
+            string fileName = ConstructFileName(fileNameBlock);
+            if (!File.Exists(fileName)) { Processor.SetChoiceRegisterValue("PI", 10); return false; }
+
+            File.Delete(fileName);
+
+            if (File.Exists(fileName)) { Processor.SetChoiceRegisterValue("PI", 10); return false; }
+            return true;
         }
     }
 }

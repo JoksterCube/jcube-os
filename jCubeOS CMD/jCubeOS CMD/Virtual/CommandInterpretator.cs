@@ -24,6 +24,8 @@ namespace jCubeOS_CMD.Virtual
             string strCommand = new string(command);
             if (strCommand.StartsWith("L1") || strCommand.StartsWith("L2")) return L(r: command[1], x: command[2], y: command[3]);
             else if (strCommand.StartsWith("S1") || strCommand.StartsWith("S2")) return S(r: command[1], x: command[2], y: command[3]);
+            else if (strCommand.StartsWith("INC1") || strCommand.StartsWith("INC2")) return INC(r: command[3]);
+            else if (strCommand.StartsWith("DEC1") || strCommand.StartsWith("DEC2")) return DEC(r: command[3]);
             else if (strCommand.StartsWith("ADD")) return ADD();
             else if (strCommand.StartsWith("AD")) return AD(x: command[2], y: command[3]);
             else if (strCommand.StartsWith("SUB")) return SUB();
@@ -49,10 +51,11 @@ namespace jCubeOS_CMD.Virtual
             else if (strCommand.StartsWith("PD1") || strCommand.StartsWith("PD2")) return PD(r: command[2]);
             else if (strCommand.StartsWith("FOW") || strCommand.StartsWith("FOR")) return FO(w: command[2], x: command[3]);
             else if (strCommand.StartsWith("FG")) return FG(x: command[2], y: command[3]);
+            else if (strCommand.StartsWith("FR")) return FR(x: command[2], y: command[3]);
             else if (strCommand.StartsWith("FP")) return FP(x: command[2], y: command[3]);
             else if (strCommand.StartsWith("FW")) return FW(x: command[2], y: command[3]);
-            else if (strCommand.StartsWith("FC")) return FC(x: command[2]);
             else if (strCommand.StartsWith("FCR")) return FCR();
+            else if (strCommand.StartsWith("FC")) return FC(x: command[2]);
             else if (strCommand.StartsWith("FD")) return FD(x: command[2]);
             else if (strCommand.StartsWith("HALT")) return HALT();
             else return IncorrectCommand();
@@ -76,27 +79,61 @@ namespace jCubeOS_CMD.Virtual
 
         private bool L(char r, char x, char y)
         {
-            int numX = x.ToString().HexToInt();
-            int numY = y.ToString().HexToInt();
-            char[] memoryWord = VirtualMemory.GetValue(numX * Utility.BLOCK_SIZE + numY);
-            switch (r)
+            if (x.ToString().IsHex() && y.ToString().IsHex())
             {
-                case '1':
-                    Processor.SetRegisterValue("R1", memoryWord);
-                    break;
-                case '2':
-                    Processor.SetRegisterValue("R2", memoryWord);
-                    break;
-                default: return false;
+                int numX = x.ToString().HexToInt();
+                int numY = y.ToString().HexToInt();
+                char[] memoryWord = VirtualMemory.GetValue(numX * Utility.BLOCK_SIZE + numY);
+                switch (r)
+                {
+                    case '1':
+                        Processor.SetRegisterValue("R1", memoryWord);
+                        break;
+                    case '2':
+                        Processor.SetRegisterValue("R2", memoryWord);
+                        break;
+                    default: return false;
+                }
+                Processor.DecTIRegisterValue();
+                return true;
             }
-            Processor.DecTIRegisterValue();
-            return true;
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 3);
+                return false;
+            }
         }
 
         private bool S(char r, char x, char y)
         {
-            int numX = x.ToString().HexToInt();
-            int numY = y.ToString().HexToInt();
+            if (x.ToString().IsHex() && y.ToString().IsHex())
+            {
+                int numX = x.ToString().HexToInt();
+                int numY = y.ToString().HexToInt();
+                char[] registerContent;
+                switch (r)
+                {
+                    case '1':
+                        registerContent = Processor.GetRegisterValue("R1");
+                        break;
+                    case '2':
+                        registerContent = Processor.GetRegisterValue("R2");
+                        break;
+                    default: return false;
+                }
+                VirtualMemory.SetValue(numX * Utility.BLOCK_SIZE + numY, registerContent);
+                Processor.DecTIRegisterValue();
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 3);
+                return false;
+            }
+        }
+
+        private bool INC(char r)
+        {
             char[] registerContent;
             switch (r)
             {
@@ -108,9 +145,79 @@ namespace jCubeOS_CMD.Virtual
                     break;
                 default: return false;
             }
-            VirtualMemory.SetValue(numX * Utility.BLOCK_SIZE + numY, registerContent);
-            Processor.DecTIRegisterValue();
-            return true;
+            if (registerContent.IsHex())
+            {
+                int registerInt = registerContent.HexToInt();
+
+                registerInt++;
+
+                char[] hexResult = registerInt.IntToHex();
+                if (hexResult.Length > Utility.WORD_SIZE) hexResult = hexResult.Skip(hexResult.Length - Utility.WORD_SIZE).ToArray();
+
+                switch (r)
+                {
+                    case '1':
+                        Processor.SetRegisterValue("R1", hexResult);
+                        break;
+                    case '2':
+                        Processor.SetRegisterValue("R2", hexResult);
+                        break;
+                    default: return false;
+                }
+
+                UpdateStatusFlag(registerInt);
+                Processor.DecTIRegisterValue();
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 3);
+                return false;
+            }
+        }
+
+        private bool DEC(char r)
+        {
+            char[] registerContent;
+            switch (r)
+            {
+                case '1':
+                    registerContent = Processor.GetRegisterValue("R1");
+                    break;
+                case '2':
+                    registerContent = Processor.GetRegisterValue("R2");
+                    break;
+                default: return false;
+            }
+            if (registerContent.IsHex())
+            {
+                int registerInt = registerContent.HexToInt();
+
+                registerInt--;
+
+                char[] hexResult = registerInt.IntToHex();
+                if (hexResult.Length > Utility.WORD_SIZE) hexResult = hexResult.Skip(hexResult.Length - Utility.WORD_SIZE).ToArray();
+
+                switch (r)
+                {
+                    case '1':
+                        Processor.SetRegisterValue("R1", hexResult);
+                        break;
+                    case '2':
+                        Processor.SetRegisterValue("R2", hexResult);
+                        break;
+                    default: return false;
+                }
+
+                UpdateStatusFlag(registerInt);
+                Processor.DecTIRegisterValue();
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 3);
+                return false;
+            }
         }
 
         private bool ADD()
@@ -512,17 +619,14 @@ namespace jCubeOS_CMD.Virtual
             else
             {
                 Processor.SetChoiceRegisterValue("PI", 1);
-                return true;
+                return false;
             }
         }
 
         private bool GD(char r)
         {
-            if (r == '1' || r == '2')
-            {
-                Processor.SetChoiceRegisterValue("SI", 2);
-                Processor.DecTIRegisterValue();
-            }
+            Processor.SetChoiceRegisterValue("SI", 2);
+            Processor.DecTIRegisterValue();
             return true;
         }
 
@@ -538,7 +642,7 @@ namespace jCubeOS_CMD.Virtual
             else
             {
                 Processor.SetChoiceRegisterValue("PI", 1);
-                return true;
+                return false;
             }
         }
 
@@ -560,49 +664,122 @@ namespace jCubeOS_CMD.Virtual
             else
             {
                 Processor.SetChoiceRegisterValue("PI", 1);
-                return true;
+                return false;
             }
         }
 
         private bool FG(char x, char y)
         {
+            if (x.ToString().IsHex() && y.ToString().IsHex())
+            {
+                Processor.SetChoiceRegisterValue("SI", 10);
+                Processor.DecTIRegisterValue();
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 1);
+                return false;
+            }
+        }
 
-            return false;
+        private bool FR(char x, char y)
+        {
+            char[] R1content = Processor.GetRegisterValue("R1");
+            char[] R2content = Processor.GetRegisterValue("R2");
+            if (x.ToString().IsHex() && y.ToString().IsHex() && R1content.IsHex() && R2content.IsHex())
+            {
+                Processor.SetChoiceRegisterValue("SI", 11);
+                Processor.DecTIRegisterValue();
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 1);
+                return false;
+            }
         }
 
         private bool FP(char x, char y)
         {
-
-            return false;
+            if (x.ToString().IsHex() && y.ToString().IsHex())
+            {
+                Processor.SetChoiceRegisterValue("SI", 8);
+                Processor.DecTIRegisterValue();
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 1);
+                return false;
+            }
         }
 
         private bool FW(char x, char y)
         {
-
-            return false;
+            char[] R1content = Processor.GetRegisterValue("R1");
+            char[] R2content = Processor.GetRegisterValue("R2");
+            if (x.ToString().IsHex() && y.ToString().IsHex() && R1content.IsHex() && R2content.IsHex())
+            {
+                Processor.SetChoiceRegisterValue("SI", 9);
+                Processor.DecTIRegisterValue();
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 1);
+                return false;
+            }
         }
 
         private bool FC(char x)
         {
-
-            return false;
+            if (x.ToString().IsHex())
+            {
+                Processor.SetChoiceRegisterValue("SI", 6);
+                Processor.DecTIRegisterValue();
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 1);
+                return false;
+            }
         }
 
         private bool FCR()
         {
-
-            return false;
+            if (Processor.GetRegisterValue("R1").IsHex())
+            {
+                Processor.SetChoiceRegisterValue("SI", 6);
+                Processor.DecTIRegisterValue();
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 1);
+                return false;
+            }
         }
 
         private bool FD(char x)
         {
-
-            return false;
+            if (x.ToString().IsHex())
+            {
+                Processor.SetChoiceRegisterValue("SI", 7);
+                Processor.DecTIRegisterValue();
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 1);
+                return false;
+            }
         }
 
         private bool HALT()
         {
-            Processor.SetChoiceRegisterValue("SI", 10);
+            Processor.SetChoiceRegisterValue("SI", 12);
             Processor.DecTIRegisterValue();
             return true;
         }

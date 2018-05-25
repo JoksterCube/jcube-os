@@ -33,7 +33,7 @@ namespace jCubeOS_CMD.Real
             Pager = pager;
             FileManager = new FileManager(RealMemory, this);
             CommandInterpretator = new CommandInterpretator(this, virtualMemory);
-            Interruptor = new Interruptor(this, virtualMemory, FileManager);
+            Interruptor = new Interruptor(this, virtualMemory, FileManager, RealMemory);
 
             // STOPS PROGRAM AFTER MAX STEP COUNT
             UseMaxStep = true;
@@ -49,7 +49,7 @@ namespace jCubeOS_CMD.Real
                 { "SF", new StatusFlagRegister() },								            // Aritmetic operation logic values
                 { "MODE", new ChoiceRegister('N', 'S') },						            // Processor mode "N" - user, "S" - supervisor
                 { "PI", new ChoiceRegister(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12) },		// Program interuptor
-                { "SI", new ChoiceRegister(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10) },	        	// Supervisor interuptor
+                { "SI", new ChoiceRegister(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12) },	    // Supervisor interuptor
                 { "TI", new HexRegister(Utility.TIMER_VALUE, 1) }				            // Timer interuptor
             };
         }
@@ -144,7 +144,7 @@ namespace jCubeOS_CMD.Real
             Console.WriteLine("STEP: " + stringCommand);
             bool commandResult = CommandInterpretator.ParseCommand(stepCommand);
 
-            if (Test()) if (!Interrupt()) return false;
+            if (Test()) if (!Interrupt()) { FileManager.CloseAll(); return false; }
 
             if (ChangedIC) ChangedIC = false;
             else IncICRegisterValue(1);
