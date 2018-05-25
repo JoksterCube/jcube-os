@@ -9,13 +9,15 @@ namespace jCubeOS_CMD
 {
     static class Utility
     {
-        public static readonly int BLOCKS = 64;
+        public static readonly int BLOCKS = 128;
         public static readonly int BLOCK_SIZE = 16;
         public static readonly int WORD_SIZE = 4;
         public static readonly int VIRTUAL_MEMORY_BLOCKS = 16;
-        public static readonly int USER_MEMORY_BLOCKS = 32;
+        public static readonly int USER_MEMORY_BLOCKS = 96;
         public static readonly int EXTERNAL_MEMORY_BLOCKS = 128;
         public static readonly int TIMER_VALUE = 15;
+        public static readonly int MAX_STEPS = 256;
+        public static readonly int FILE_MANAGER_BLOCKS = 8;
 
         public enum CharMode { Number, Character }
 
@@ -54,6 +56,8 @@ namespace jCubeOS_CMD
 
             return sb.ToString();
         }
+
+        public static char[] RemoveWhiteSpaces(this char[] charArray) => RemoveWhiteSpaces(new string(charArray)).ToCharArray();
 
         public static string AddWhiteSpacesToSize(this string str, int size)
         {
@@ -120,6 +124,7 @@ namespace jCubeOS_CMD
         public static int CharsToInt(this char[] value, CharMode charMode = CharMode.Character)
         {
             int intValue = 0;
+            value = value.RemoveWhiteSpaces();
             for (int i = 0; i < value.Length; i++)
             {
                 intValue *= 10;

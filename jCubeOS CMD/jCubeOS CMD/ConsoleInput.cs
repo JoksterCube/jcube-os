@@ -32,14 +32,8 @@ namespace jCubeOS_CMD
             Console.Write("INPUT: ");
             string word = Console.ReadLine();
             char[] wordChars = new char[Utility.WORD_SIZE];
-            if (word.Length > Utility.WORD_SIZE)
-            {
-                word = word.Substring(0, Utility.WORD_SIZE);
-            }
-            else
-            {
-                word = word.AddWhiteSpacesToSize(Utility.WORD_SIZE);
-            }
+            if (word.Length > Utility.WORD_SIZE) word = word.Substring(0, Utility.WORD_SIZE);
+            else if (word.Length < Utility.WORD_SIZE) word = word.AddWhiteSpacesToSize(Utility.WORD_SIZE);
             wordChars = word.ToCharArray();
             return wordChars;
         }

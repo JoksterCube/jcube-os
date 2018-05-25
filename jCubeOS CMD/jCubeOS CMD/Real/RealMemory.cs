@@ -22,7 +22,7 @@ namespace jCubeOS_CMD.Real
             }
         }
 
-        private Cell GetMemoryCell(int block, int cell) => Memory[block].GetCell(cell);
+        public Cell GetMemoryCell(int block, int cell) => Memory[block].GetCell(cell);
 
         //USER MEMORY METHODS
         public Cell GetUserMemoryCell(int address)
@@ -73,7 +73,7 @@ namespace jCubeOS_CMD.Real
             var addressTuple = Utility.GetAddressTuple(supervisorAddress);
             int block = addressTuple.Item1;
             int cell = addressTuple.Item2;
-            if (block < Utility.BLOCKS - Utility.USER_MEMORY_BLOCKS) return GetMemoryCell(block + Utility.USER_MEMORY_BLOCKS, cell);
+            if (block < Utility.BLOCKS - Utility.USER_MEMORY_BLOCKS - Utility.FILE_MANAGER_BLOCKS) return GetMemoryCell(block + Utility.USER_MEMORY_BLOCKS, cell);
             else throw new Exception("Block exceeds supervisor memory.");
         }
 
@@ -99,7 +99,7 @@ namespace jCubeOS_CMD.Real
         public void PutDataToSupervisorMemory(char[][][] blocks, int supervisorStartBlockAddress)
         {
             supervisorStartBlockAddress -= supervisorStartBlockAddress % Utility.BLOCK_SIZE;
-            if (blocks.Length <= Utility.BLOCKS - Utility.USER_MEMORY_BLOCKS)
+            if (blocks.Length <= Utility.BLOCKS - Utility.USER_MEMORY_BLOCKS - Utility.FILE_MANAGER_BLOCKS)
             {
                 for (int i = 0; i < blocks.Length; i++)
                 {
@@ -151,26 +151,31 @@ namespace jCubeOS_CMD.Real
 
         public void PrintUserMemory()
         {
-            Console.WriteLine("--------------------------------USER MEMORY-------------------------------------");
+            Console.WriteLine("-----------------------------------USER MEMORY---------------------------------------");
+            Console.Write("    |");
+            for (int i = 0; i < Utility.BLOCK_SIZE; i++) Console.Write(" " + new string(i.IntToHex(2)) + " |");
+            Console.Write("\n-------------------------------------------------------------------------------------\n");
             for (int i = 0; i < Utility.USER_MEMORY_BLOCKS; i++)
             {
-                string block = string.Empty;
-                for (int ii = 0; ii < Utility.BLOCK_SIZE; ii++) block += new string(GetUserMemoryValue(i * Utility.BLOCK_SIZE + ii)) + new string(new char[] { '|' });
-                Console.WriteLine(block.Replace('\n', '&'));
+                string block = " " + new string(i.IntToHex(2)) + " |";
+                for (int ii = 0; ii < Utility.BLOCK_SIZE; ii++) block += new string(GetUserMemoryValue(i * Utility.BLOCK_SIZE + ii)) + "|";
+                Console.WriteLine(block.Replace('\n', 'n'));
             }
-            Console.WriteLine("--------------------------------USER MEMORY-------------------------------------");
+            Console.WriteLine("-----------------------------------USER MEMORY---------------------------------------");
         }
 
         public void PrintSupervisorMemory()
         {
-            Console.WriteLine("------------------------------SUPERVISOR MEMORY---------------------------------");
+            Console.WriteLine("---------------------------------SUPERVISOR MEMORY-----------------------------------");
+            for (int i = 0; i < Utility.BLOCK_SIZE; i++) Console.Write(" " + new string(i.IntToHex(2)) + " |");
+            Console.Write("\n-------------------------------------------------------------------------------------\n");
             for (int i = 0; i < Utility.BLOCKS - Utility.USER_MEMORY_BLOCKS; i++)
             {
-                string block = string.Empty;
-                for (int ii = 0; ii < Utility.BLOCK_SIZE; ii++) block += new string(GetSupervisorMemoryValue(i * Utility.BLOCK_SIZE + ii)) + new string(new char[] { '|' });
-                Console.WriteLine(block.Replace('\n', '&'));
+                string block = " " + new string(i.IntToHex(2)) + " |";
+                for (int ii = 0; ii < Utility.BLOCK_SIZE; ii++) block += new string(GetSupervisorMemoryValue(i * Utility.BLOCK_SIZE + ii)) + "|";
+                Console.WriteLine(block.Replace('\n', 'n'));
             }
-            Console.WriteLine("------------------------------SUPERVISOR MEMORY---------------------------------");
+            Console.WriteLine("---------------------------------SUPERVISOR MEMORY-----------------------------------");
         }
     }
 }

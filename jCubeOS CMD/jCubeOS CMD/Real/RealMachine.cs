@@ -114,7 +114,7 @@ namespace jCubeOS_CMD.Real
 
         private void PutTaskToSupervisorMemory(char[][][] blocks) => RealMemory.PutDataToSupervisorMemory(blocks, 0);
 
-        private void PutTaskProgramToSupervisorMemory(char[][][] blocks, int supervisorAddress) => RealMemory.PutDataToSupervisorMemory(blocks, supervisorAddress);
+        private void PutTaskProgramToSupervisorMemory(char[][][] blocks, int supervisorAddress) => RealMemory.PutDataToSupervisorMemory(blocks, 0);
 
         private void CleanTaskMemoryFromSupervisorMemory(int supervisorAddress, int blockCount) => RealMemory.CleanDataFromSupervisorMemory(supervisorAddress, blockCount);
 
@@ -141,11 +141,9 @@ namespace jCubeOS_CMD.Real
 
             char[][][] taskMemory = CreateTaskMemory(cleanCode, cleanData, dataStartBlock);
 
-            PutTaskProgramToSupervisorMemory(taskMemory, supervisorAddress + blockSize * Utility.BLOCK_SIZE);
+            PutTaskProgramToSupervisorMemory(taskMemory, supervisorAddress);
 
-            CleanTaskMemoryFromSupervisorMemory(supervisorAddress, blockSize);
-
-            return Tuple.Create(supervisorAddress + blockSize * Utility.BLOCK_SIZE, Utility.VIRTUAL_MEMORY_BLOCKS);
+            return Tuple.Create(supervisorAddress, Utility.VIRTUAL_MEMORY_BLOCKS);
         }
 
         private Tuple<List<string>, List<string>> SegmentTask(string[] lines)
@@ -303,7 +301,7 @@ namespace jCubeOS_CMD.Real
                 {
                     for (int c = 0; c < Utility.BLOCK_SIZE; c++)
                     {
-                        if (b >= dataStartBlock && dd < data.Length)
+                        if ( data != null && dd < data.Length && b >= dataStartBlock)
                         {
                             taskMemory[b][c] = data[dd];
                             dd++;

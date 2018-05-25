@@ -1,6 +1,7 @@
 ﻿using jCubeOS_CMD.Real;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace jCubeOS_CMD.Virtual
@@ -31,7 +32,7 @@ namespace jCubeOS_CMD.Virtual
             else if (strCommand.StartsWith("ML")) return ML(x: command[2], y: command[3]);
             else if (strCommand.StartsWith("DIV")) return DIV();
             else if (strCommand.StartsWith("CMP")) return CMP();
-            else if (strCommand.StartsWith("C")) return C(r: command[1], x: command[2], y: command[3]);
+            else if (strCommand.StartsWith("C1") || strCommand.StartsWith("C2")) return C(r: command[1], x: command[2], y: command[3]);
             else if (strCommand.StartsWith("XOR")) return XOR();
             else if (strCommand.StartsWith("AND")) return AND();
             else if (strCommand.StartsWith("OR")) return OR();
@@ -43,10 +44,10 @@ namespace jCubeOS_CMD.Virtual
             else if (strCommand.StartsWith("JZ")) return JZ(x: command[2], y: command[3]);
             else if (strCommand.StartsWith("JN")) return JN(x: command[2], y: command[3]);
             else if (strCommand.StartsWith("GDB")) return GDB(x: command[3]);
-            else if (strCommand.StartsWith("GD")) return GD(r: command[2]);
+            else if (strCommand.StartsWith("GD1") || strCommand.StartsWith("GD2")) return GD(r: command[2]);
             else if (strCommand.StartsWith("PDB")) return PDB(x: command[3]);
-            else if (strCommand.StartsWith("PD")) return PD(r: command[2]);
-            else if (strCommand.StartsWith("FO")) return FO(w: command[2], x: command[3]);
+            else if (strCommand.StartsWith("PD1") || strCommand.StartsWith("PD2")) return PD(r: command[2]);
+            else if (strCommand.StartsWith("FOW") || strCommand.StartsWith("FOR")) return FO(w: command[2], x: command[3]);
             else if (strCommand.StartsWith("FG")) return FG(x: command[2], y: command[3]);
             else if (strCommand.StartsWith("FP")) return FP(x: command[2], y: command[3]);
             else if (strCommand.StartsWith("FW")) return FW(x: command[2], y: command[3]);
@@ -123,6 +124,8 @@ namespace jCubeOS_CMD.Virtual
 
                 int result = R1intValue + R2intValue;
                 char[] hexResult = result.IntToHex();
+                if (hexResult.Length > Utility.WORD_SIZE) hexResult = hexResult.Skip(hexResult.Length - Utility.WORD_SIZE).ToArray();
+
                 Processor.SetRegisterValue("R1", hexResult);
                 UpdateStatusFlag(result);
                 Processor.DecTIRegisterValue();
@@ -146,6 +149,7 @@ namespace jCubeOS_CMD.Virtual
 
                 int result = R1intValue + R2intValue;
                 char[] hexResult = result.IntToHex();
+                if (hexResult.Length > Utility.WORD_SIZE) hexResult = hexResult.Skip(hexResult.Length - Utility.WORD_SIZE).ToArray();
 
                 int numX = x.ToString().HexToInt();
                 int numY = y.ToString().HexToInt();
@@ -173,6 +177,8 @@ namespace jCubeOS_CMD.Virtual
 
                 int result = R1intValue - R2intValue;
                 char[] hexResult = result.IntToHex();
+                if (hexResult.Length > Utility.WORD_SIZE) hexResult = hexResult.Skip(hexResult.Length - Utility.WORD_SIZE).ToArray();
+
                 Processor.SetRegisterValue("R1", hexResult);
 
                 UpdateStatusFlag(result);
@@ -197,6 +203,7 @@ namespace jCubeOS_CMD.Virtual
 
                 int result = R1intValue - R2intValue;
                 char[] hexResult = result.IntToHex();
+                if (hexResult.Length > Utility.WORD_SIZE) hexResult = hexResult.Skip(hexResult.Length - Utility.WORD_SIZE).ToArray();
 
                 int numX = x.ToString().HexToInt();
                 int numY = y.ToString().HexToInt();
@@ -224,6 +231,7 @@ namespace jCubeOS_CMD.Virtual
 
                 int result = R1intValue * R2intValue;
                 char[] hexResult = result.IntToHex();
+                if (hexResult.Length > Utility.WORD_SIZE) hexResult = hexResult.Skip(hexResult.Length - Utility.WORD_SIZE).ToArray();
                 Processor.SetRegisterValue("R1", hexResult);
 
                 UpdateStatusFlag(result);
@@ -248,6 +256,7 @@ namespace jCubeOS_CMD.Virtual
 
                 int result = R1intValue * R2intValue;
                 char[] hexResult = result.IntToHex();
+                if (hexResult.Length > Utility.WORD_SIZE) hexResult = hexResult.Skip(hexResult.Length - Utility.WORD_SIZE).ToArray();
 
                 int numX = x.ToString().HexToInt();
                 int numY = y.ToString().HexToInt();
@@ -360,6 +369,7 @@ namespace jCubeOS_CMD.Virtual
 
                 int result = R1intValue ^ R2intValue;
                 char[] hexResult = result.IntToHex();
+                if (hexResult.Length > Utility.WORD_SIZE) hexResult = hexResult.Skip(hexResult.Length - Utility.WORD_SIZE).ToArray();
                 Processor.SetRegisterValue("R1", hexResult);
 
                 UpdateStatusFlag(result);
@@ -384,6 +394,7 @@ namespace jCubeOS_CMD.Virtual
 
                 int result = R1intValue & R2intValue;
                 char[] hexResult = result.IntToHex();
+                if (hexResult.Length > Utility.WORD_SIZE) hexResult = hexResult.Skip(hexResult.Length - Utility.WORD_SIZE).ToArray();
                 Processor.SetRegisterValue("R1", hexResult);
 
                 UpdateStatusFlag(result);
@@ -408,6 +419,7 @@ namespace jCubeOS_CMD.Virtual
 
                 int result = R1intValue | R2intValue;
                 char[] hexResult = result.IntToHex();
+                if (hexResult.Length > Utility.WORD_SIZE) hexResult = hexResult.Skip(hexResult.Length - Utility.WORD_SIZE).ToArray();
                 Processor.SetRegisterValue("R1", hexResult);
 
                 UpdateStatusFlag(result);
@@ -430,6 +442,7 @@ namespace jCubeOS_CMD.Virtual
 
                 int result = ~R1intValue;
                 char[] hexResult = result.IntToHex();
+                if (hexResult.Length > Utility.WORD_SIZE) hexResult = hexResult.Skip(hexResult.Length - Utility.WORD_SIZE).ToArray();
                 Processor.SetRegisterValue("R1", hexResult);
 
                 UpdateStatusFlag(result);
@@ -448,6 +461,7 @@ namespace jCubeOS_CMD.Virtual
             int numX = x.ToString().HexToInt();
             int numY = y.ToString().HexToInt();
             Processor.SetICRegisterValue(numX * Utility.BLOCK_SIZE + numY);
+            Processor.ChangedIC = true;
             Processor.DecTIRegisterValue();
             return true;
         }
@@ -489,51 +503,47 @@ namespace jCubeOS_CMD.Virtual
 
         private bool GDB(char x)
         {
-            int numX = x.ToString().HexToInt();
-            Processor.SetChannelToolRegisterValues(0, VirtualMemory.GetPager().GetCellRealAddress(numX * Utility.BLOCK_SIZE), 4, 1);
-            Processor.SetChoiceRegisterValue("SI", 1);
-            Processor.DecTIRegisterValue();
-            return true;
+            if (x.ToString().IsHex())
+            {
+                Processor.SetChoiceRegisterValue("SI", 1);
+                Processor.DecTIRegisterValue();
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 1);
+                return true;
+            }
         }
 
         private bool GD(char r)
         {
-            switch (r)
+            if (r == '1' || r == '2')
             {
-                case '1':
-                    Processor.SetChannelToolRegisterValues(0, 0, 5, 6);
-                    break;
-                case '2':
-                    Processor.SetChannelToolRegisterValues(0, 0, 5, 7);
-                    break;
-                default: return false;
+                Processor.SetChoiceRegisterValue("SI", 2);
+                Processor.DecTIRegisterValue();
             }
-            Processor.SetChoiceRegisterValue("SI", 2);
-            Processor.DecTIRegisterValue();
             return true;
         }
 
         private bool PDB(char x)
         {
-            int numX = x.ToString().HexToInt();
-            Processor.SetChannelToolRegisterValues(VirtualMemory.GetPager().GetCellRealAddress(numX * Utility.BLOCK_SIZE), 0, 1, 4);
-            Processor.SetChoiceRegisterValue("SI", 3);
-            Processor.DecTIRegisterValue();
-            return true;
+            if (x.ToString().IsHex())
+            {
+                int numX = x.ToString().HexToInt();
+                Processor.SetChoiceRegisterValue("SI", 3);
+                Processor.DecTIRegisterValue();
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 1);
+                return true;
+            }
         }
 
         private bool PD(char r)
         {
-            switch (r)
-            {
-                case '1':
-                    Processor.SetChannelToolRegisterValues(0, 0, 6, 5);
-                    break;
-                case '2':
-                    Processor.SetChannelToolRegisterValues(0, 0, 7, 5);
-                    break;
-                default: return false;
-            }
             Processor.SetChoiceRegisterValue("SI", 4);
             Processor.DecTIRegisterValue();
             return true;
@@ -541,8 +551,17 @@ namespace jCubeOS_CMD.Virtual
 
         private bool FO(char w, char x)
         {
-
-            return false;
+            if (x.ToString().IsHex())
+            {
+                Processor.SetChoiceRegisterValue("SI", 5);
+                Processor.DecTIRegisterValue();
+                return true;
+            }
+            else
+            {
+                Processor.SetChoiceRegisterValue("PI", 1);
+                return true;
+            }
         }
 
         private bool FG(char x, char y)
@@ -583,7 +602,7 @@ namespace jCubeOS_CMD.Virtual
 
         private bool HALT()
         {
-            Processor.SetChoiceRegisterValue("SI", 6);
+            Processor.SetChoiceRegisterValue("SI", 10);
             Processor.DecTIRegisterValue();
             return true;
         }

@@ -16,8 +16,14 @@ namespace jCubeOS_CMD.Real
         private Pager Pager { get; set; }
         private CommandInterpretator CommandInterpretator { get; set; }
         private Interruptor Interruptor { get; set; }
+        private FileManager FileManager { get; set; }
 
         private Dictionary<string, Register> registers;
+
+        private bool UseMaxStep { get; set; }
+        private int CurrentStep { get; set; }
+
+        public bool ChangedIC { get; set; }
 
         public Processor(RealMemory realMemory, ChannelTool channelTool, VirtualMemory virtualMemory = null, Pager pager = null)
         {
@@ -25,20 +31,26 @@ namespace jCubeOS_CMD.Real
             VirtualMemory = virtualMemory;
             ChannelTool = channelTool;
             Pager = pager;
+            FileManager = new FileManager(RealMemory, this);
             CommandInterpretator = new CommandInterpretator(this, virtualMemory);
-            Interruptor = new Interruptor(this);
+            Interruptor = new Interruptor(this, virtualMemory, FileManager);
+
+            // STOPS PROGRAM AFTER MAX STEP COUNT
+            UseMaxStep = true;
+            // CURRENT STEP
+            CurrentStep = 0;
 
             registers = new Dictionary<string, Register>
             {
-                { "R1", new Register(value: 0) },								// Word length general register
-                { "R2", new Register(value: 0) },								// Word length general register
-                { "IC", new HexRegister(2) },									// Current command adress in memory register
-                { "PTR", new HexRegister(4) },									// Page table adress register
-                { "SF", new StatusFlagRegister() },								// Aritmetic operation logic values
-                { "MODE", new ChoiceRegister('N', 'S') },						// Processor mode "N" - user, "S" - supervisor
-                { "PI", new ChoiceRegister(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) },		// Program interuptor
-                { "SI", new ChoiceRegister(0, 1, 2, 3, 4, 5, 6, 7) },			// Supervisor interuptor
-                { "TI", new HexRegister(Utility.TIMER_VALUE, 1) }				// Timer interuptor
+                { "R1", new Register(value: 0) },								            // Word length general register
+                { "R2", new Register(value: 0) },								            // Word length general register
+                { "IC", new HexRegister(2) },									            // Current command adress in memory register
+                { "PTR", new HexRegister(4) },									            // Page table adress register
+                { "SF", new StatusFlagRegister() },								            // Aritmetic operation logic values
+                { "MODE", new ChoiceRegister('N', 'S') },						            // Processor mode "N" - user, "S" - supervisor
+                { "PI", new ChoiceRegister(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12) },		// Program interuptor
+                { "SI", new ChoiceRegister(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10) },	        	// Supervisor interuptor
+                { "TI", new HexRegister(Utility.TIMER_VALUE, 1) }				            // Timer interuptor
             };
         }
 
@@ -62,44 +74,35 @@ namespace jCubeOS_CMD.Real
 
         public char[] GetRegisterValue(string registerName) => GetRegister(registerName).GetValue();
 
-        public void SetRegisterValue(string registerName, char[] value)
-        {
-            if (HasRegister(registerName)) GetRegister(registerName).SetValue(value);
-            else throw new Exception("Processor does not have register named " + registerName);
-        }
+        public void SetRegisterValue(string registerName, char[] value) => GetRegister(registerName).SetValue(value);
 
         public void SetChoiceRegisterValue(string registerName, char[] value)
         {
-            if (!HasRegister(registerName)) throw new Exception("Processor does not have register named " + registerName);
-            else if (GetRegister(registerName) is ChoiceRegister) ((ChoiceRegister)GetRegister(registerName)).SetValue(value);
+            if (GetRegister(registerName) is ChoiceRegister) ((ChoiceRegister)GetRegister(registerName)).SetValue(value);
             else throw new Exception("Register " + registerName + " is not ChoiceRegister type.");
         }
 
         public void SetChoiceRegisterValue(string registerName, int value)
         {
-            if (!HasRegister(registerName)) throw new Exception("Processor does not have register named " + registerName);
-            else if (GetRegister(registerName) is ChoiceRegister) ((ChoiceRegister)GetRegister(registerName)).SetValue(value);
+            if (GetRegister(registerName) is ChoiceRegister) ((ChoiceRegister)GetRegister(registerName)).SetValue(value);
             else throw new Exception("Register " + registerName + " is not ChoiceRegister type.");
         }
 
         public int GetChoiceRegisterIntValue(string registerName)
         {
-            if (!HasRegister(registerName)) throw new Exception("Processor does not have register named " + registerName);
-            else if (GetRegister(registerName) is ChoiceRegister) return ((ChoiceRegister)GetRegister(registerName)).GetIntValue();
+            if (GetRegister(registerName) is ChoiceRegister) return ((ChoiceRegister)GetRegister(registerName)).GetIntValue();
             else throw new Exception("Register " + registerName + " is not ChoiceRegister type.");
         }
 
         public void SetHexRegisterValue(string registerName, int value)
         {
-            if (!HasRegister(registerName)) throw new Exception("Processor does not have register named " + registerName);
-            else if (GetRegister(registerName) is HexRegister) ((HexRegister)GetRegister(registerName)).SetValue(value);
+            if (GetRegister(registerName) is HexRegister) ((HexRegister)GetRegister(registerName)).SetValue(value);
             else throw new Exception("Register " + registerName + " is not HexRegister type.");
         }
 
         public int GetHexRegisterIntValue(string registerName)
         {
-            if (!HasRegister(registerName)) throw new Exception("Processor does not have register named " + registerName);
-            else if (GetRegister(registerName) is HexRegister) return ((HexRegister)GetRegister(registerName)).GetIntValue();
+            if (GetRegister(registerName) is HexRegister) return ((HexRegister)GetRegister(registerName)).GetIntValue();
             else throw new Exception("Register " + registerName + " is not HexRegister type.");
         }
 
@@ -127,6 +130,7 @@ namespace jCubeOS_CMD.Real
             Pager = pager;
             SetPTRRegisterValue(pager.GetPTR());
             CommandInterpretator.SetVirtualMemory(virtualMemory);
+            Interruptor.SetVirtualMemory(virtualMemory);
         }
 
         public void SetSupervisorMode() => ((ChoiceRegister)GetRegister("MODE")).SetValue('S');
@@ -138,9 +142,15 @@ namespace jCubeOS_CMD.Real
             char[] stepCommand = VirtualMemory.GetValue(GetICRegisterValue());
             string stringCommand = new String(stepCommand);
             Console.WriteLine("STEP: " + stringCommand);
-            IncICRegisterValue(1);
             bool commandResult = CommandInterpretator.ParseCommand(stepCommand);
-            if (Test()) return Interrupt();
+
+            if (Test()) if (!Interrupt()) return false;
+
+            if (ChangedIC) ChangedIC = false;
+            else IncICRegisterValue(1);
+
+            if (UseMaxStep && CurrentStep++ >= Utility.MAX_STEPS) return StopProgram();
+
             return commandResult;
         }
 
@@ -182,6 +192,12 @@ namespace jCubeOS_CMD.Real
             int SI = GetChoiceRegisterIntValue("SI");
             int TI = GetHexRegisterIntValue("TI");
             return PI + SI > 0 || TI == 0;
+        }
+
+        private bool StopProgram()
+        {
+            Console.WriteLine("Max step count of " + Utility.MAX_STEPS + " was reached. Program was stoped.");
+            return false;
         }
     }
 }

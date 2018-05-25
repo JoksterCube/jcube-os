@@ -14,7 +14,7 @@ namespace jCubeOS_CMD
             bool exit = false;
             while (!exit)
             {
-                Console.Write("Task program name: ");
+                Console.Write("\nTask program name: ");
                 string filePath = Console.ReadLine();
 
                 Input inputHandler = new ConsoleInput();
@@ -23,7 +23,7 @@ namespace jCubeOS_CMD
                 RealMachine = new RealMachine(inputHandler, outputHandler);
 
                 //FAKE MEMORY ALLOCATION
-                FakeMemory(0, 1, 3, 5, 7, 9, 10, 14, 16, 17, 21, 30);
+                FakeMemory(0, 1, 3, 5, 7, 9, 10, 14, 16, 17, 21, 23, 24, 27, 29, 31, 33);
 
                 if (!RealMachine.LoadVirtualMachine(filePath)) continue;
 
