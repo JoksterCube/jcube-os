@@ -1,0 +1,13 @@
+$CODE
+
+pradzia:L150
+C140
+JN$pradzia
+HALT
+
+$DATA
+
+[40]:1
+[50]:2
+
+$END

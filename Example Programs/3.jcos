@@ -1,0 +1,15 @@
+$CODE
+
+beginning:L150
+L260
+INC2
+C140
+JN$beginning
+HALT
+
+$DATA
+
+[40]:1
+[50]:2
+[60]:0
+$END

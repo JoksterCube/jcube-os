@@ -1,0 +1,19 @@
+$CODE
+
+PDB4
+GD1
+PDB5
+GD2
+ADD
+S168
+PDB6
+HALT
+
+$DATA
+
+[40]:Imput first number:
+[50]:Input second number:
+[60]:First and second number sum is: 
+
+$END
+

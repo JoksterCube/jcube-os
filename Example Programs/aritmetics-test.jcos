@@ -1,0 +1,22 @@
+$CODE
+
+L140
+L250
+SUB
+JL$negative
+S16A
+PDB6
+HALT
+negative:S17A
+PDB7
+HALT
+
+$DATA
+
+[40]:10
+[50]:20								    
+[60]:First and second number difference is:  
+[70]:First and second number difference is: -
+
+$END
+

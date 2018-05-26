@@ -1,0 +1,22 @@
+$CODE
+
+L210
+FOR2
+FR40
+FR50
+FCR
+FOW3
+FW40
+FW50
+FCR
+HALT
+
+$DATA
+
+[10]:10
+[20]:Text.txt
+[30]:test.txt
+[40]:Kazkoks tekstas. Daug teksto. Daugiau teksto. Dar daugiau teksto. Labai daug teksto.
+[50]:Tolimesnis Tekstas cia:
+$END
+
