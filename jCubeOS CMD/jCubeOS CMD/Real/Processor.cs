@@ -140,8 +140,10 @@ namespace jCubeOS_CMD.Real
         public bool Step()
         {
             char[] stepCommand = VirtualMemory.GetValue(GetICRegisterValue());
-            string stringCommand = new String(stepCommand);
-            Console.WriteLine("STEP: " + stringCommand);
+            char[] nextCommand = VirtualMemory.GetValue(GetICRegisterValue() + 1);
+            string stringCommand = new string(stepCommand);
+            string stringNext = new string(nextCommand);
+            Console.WriteLine("STEP: " + stringCommand + " (NEXT: " + stringNext +")");
             bool commandResult = CommandInterpretator.ParseCommand(stepCommand);
 
             if (Test()) if (!Interrupt()) { FileManager.CloseAll(); return false; }

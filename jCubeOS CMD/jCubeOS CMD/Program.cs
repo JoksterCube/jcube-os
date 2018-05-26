@@ -71,6 +71,9 @@ namespace jCubeOS_CMD
                                     RealMachine.GetRealMemory().PrintUserMemory();
                                     break;
                                 case "4":
+                                    RealMachine.GetVirtualMemory().PrintVirtualMemory();
+                                    break;
+                                case "5":
                                     RealMachine.GetProcessor().PrintAllRegisters();
                                     break;
                                 case "0":
@@ -128,8 +131,9 @@ namespace jCubeOS_CMD
             Console.WriteLine("Choose action:");
             Console.WriteLine("1. Step again");
             Console.WriteLine("2. Execute to the end");
-            Console.WriteLine("3. Print user memory");
-            Console.WriteLine("4. Print Registers");
+            Console.WriteLine("3. Print real user memory");
+            Console.WriteLine("4. Print virtual memory");
+            Console.WriteLine("5. Print Registers");
             Console.WriteLine("----------------------");
             Console.WriteLine("0. Exit");
             Console.WriteLine("c. Clear console");

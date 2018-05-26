@@ -28,5 +28,20 @@ namespace jCubeOS_CMD.Virtual
         public void SetBlockValues(int virtualBlockAddress, char[][] values) => Memory.SetUserMemoryBlockValues(Pager.GetCellRealAddress(virtualBlockAddress), values);
 
         public Pager GetPager() => Pager;
+
+        public void PrintVirtualMemory()
+        {
+            Console.WriteLine("--------------------------------VIRTUAL MEMORY---------------------------------------");
+            Console.Write("    |");
+            for (int i = 0; i < Utility.VIRTUAL_MEMORY_BLOCKS; i++) Console.Write(" " + new string(i.IntToHex(2)) + " |");
+            Console.Write("\n-------------------------------------------------------------------------------------\n");
+            for (int i = 0; i < Utility.VIRTUAL_MEMORY_BLOCKS; i++)
+            {
+                string block = " " + new string(i.IntToHex(2)) + " |";
+                for (int ii = 0; ii < Utility.BLOCK_SIZE; ii++) block += new string(GetValue(i * Utility.BLOCK_SIZE + ii)) + "|";
+                Console.WriteLine(block.Replace('\n', 'n'));
+            }
+            Console.WriteLine("--------------------------------VIRTUAL MEMORY---------------------------------------");
+        }
     }
 }

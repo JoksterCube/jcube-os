@@ -341,5 +341,7 @@ namespace jCubeOS_CMD.Real
         public Processor GetProcessor() => Processor;
 
         public RealMemory GetRealMemory() => RealMemory;
+
+        public VirtualMemory GetVirtualMemory() => VirtualMemory;
     }
 }
